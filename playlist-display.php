@@ -8,7 +8,7 @@
  * This works with the playlist-dump script, which generates the playlist as a JSON file.
  * Use to display the playlist on a Web site.
  * 
- * This can run on any maching (Web Server) as it uses the Dataplicity VPN connection
+ * This can run on any machine (Web Server) as it uses the Dataplicity VPN connection
  * to the show-runner FPP.
  * 
 */
