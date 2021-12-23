@@ -14,8 +14,8 @@
 */
 
 //Just set this...
-define ( 'URL', 'https://fpp_public_url.example.com/api/file/uploads/playlist.json' );
-define ( 'DTE', 'https://fpp_public_url.example.com/api/file/uploads/playlist.time' );
+define ( 'URL', 'https://fpp_public.example.com/api/file/uploads/playlist.json' );
+define ( 'DTE', 'https://fpp_public.example.com/api/file/uploads/playlist.time' );
 $playlistName = "Main Music";
 
 //Leave the rest alone...
