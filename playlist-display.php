@@ -14,8 +14,8 @@
 */
 
 //Just set this...
-define ( 'URL', 'https://fungible-gar-5837.dataplicity.io/api/file/uploads/playlist.json' );
-define ( 'DTE', 'https://fungible-gar-5837.dataplicity.io.io/api/file/uploads/playlist.time' );
+define ( 'URL', 'https://fpp_public_url.example.com/api/file/uploads/playlist.json' );
+define ( 'DTE', 'https://fpp_public_url.example.com/api/file/uploads/playlist.time' );
 $playlistName = "Main Music";
 
 //Leave the rest alone...
