@@ -8,14 +8,14 @@
  * This works with the playlist-dump script, which generates the playlist as a JSON file.
  * Use to display the playlist on a Web site.
  * 
- * This can run on any maching (Web Server) as it uses the Dataplicity VPN connection
+ * This can run on any machine (Web Server) as it uses the Dataplicity VPN connection
  * to the show-runner FPP.
  * 
 */
 
 //Just set this...
-define ( 'URL', 'https://fungible-gar-5837.dataplicity.io/api/file/uploads/playlist.json' );
-define ( 'DTE', 'https://fungible-gar-5837.dataplicity.io.io/api/file/uploads/playlist.time' );
+define ( 'URL', 'https://fpp_url/api/file/uploads/playlist.json' );
+define ( 'DTE', 'https://fpp_url/api/file/uploads/playlist.time' );
 $playlistName = "Main Music";
 
 //Leave the rest alone...
