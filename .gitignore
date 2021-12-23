@@ -1,5 +1,4 @@
 .DS_Store
-.gitignore
 Yuletide Window_Win_H.txt
 info-matrix.txt
 Little Drummer Boy Live.txt
@@ -8,3 +7,5 @@ display_blank.txt
 display_info.txt
 Cleaned for Distribution/info-matrix.php.txt
 emergency_msg.sh
+playlist_display.php
+
