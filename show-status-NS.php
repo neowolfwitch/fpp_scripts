@@ -1,10 +1,12 @@
 <?php
 /*** 
- * show-status.php
+ * show-status-NS.php
  * by Wolf I. Butler
  * v. 1.5, Last Updated: 12/01/2021
  * 
  * This script displays the status of my show. It is based on info-matrix.php.
+ * The "NS" is for No Scrolling, and this is experimental. I'm hoping to find a good way
+ * to display the show status on a non-scrolling display, which should be much faster.
  * 
  * This should be run on the FPP that is controlling the show status matrix.
  * It must have network access to the main show-runner and any other monitored FPP instances.
