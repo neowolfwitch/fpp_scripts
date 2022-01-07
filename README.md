@@ -9,4 +9,4 @@ These scripts apply to my unique show/situation and are being shared to inspire 
 
 License: CC0 1.0 Universal: This work has been marked as dedicated to the public domain.
 
-All scripts are provicded ​“AS IS”. Developer makes no warranties, express or implied, and hereby disclaims all implied warranties, including any warranty of merchantability and warranty of fitness for a particular purpose.
+All scripts are provided ​“AS IS”. Developer makes no warranties, express or implied, and hereby disclaims all implied warranties, including any warranty of merchantability and warranty of fitness for a particular purpose.
