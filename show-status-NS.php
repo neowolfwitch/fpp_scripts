@@ -42,10 +42,10 @@ define ( 'GAP', ', ');  //What to put between scrolling text blocks.
 $host  = "10.0.0.5";        # Host/ip of the show-runner FPP instance. This can be localhost, an IP address, or a resolvable host name.
 $name  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
 $color = "RAND";            # Color code (#00FF00), value (Green), or "RAND" for random.
-$font  = "FreeSans";         # Font Name. RAND will randomize fonts.
+$font  = "FreeSans";        # Font Name. RAND will randomize fonts.
 $size  = 12;                # Font size
 $pos   = "Center";          # Position/Scroll: 'Center', 'L2R', 'R2L', 'T2B', 'B2T'
-$pps   = 48;                # Pixels Per Second to Scroll
+//$pps   = 48;                # Pixels Per Second to Scroll
 $pause = 2;                 # Seconds to pause "Center" text.
 $antiAlias = TRUE;          # Anti-Alias the text
 
@@ -247,8 +247,7 @@ $arrDispConfig = array(
     'Font' => $font,
     'FontSize' => $size,
     'AntiAlias' => $antiAlias,
-    'Position' => $pos,
-    'PixelsPerSecond' => $pps
+    'Position' => $pos
 );
 
 //Loop continuously

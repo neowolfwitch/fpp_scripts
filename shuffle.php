@@ -35,6 +35,13 @@ $outList = 'Shuffled Xmas';              //This is the output playlist name.
 $reminderList = "Reminder";        //Reminder/Welcome playlist. Set to FALSE if not using.
 $reminderInt = 7;       //Number of songs between reminder messages.
 //reminderList should be a playlist that contains your reminder sequence(s).
+//These would include announcements and reminder messages you want played regularly during your show.
+
+//Note on song announcements:
+//If you announce certain non-Christmas or other songs, like "This is a Disney song..." the best way to
+//handle them is to put them in their own individual playlists, just containing your announcment and
+//the special song's sequecne, and then link those into your $inList playlist by just adding them as
+//a playlist. This script will treat them appropriately.
 
 //* Don't edit anything after here. */
 
