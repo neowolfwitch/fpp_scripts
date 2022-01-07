@@ -10,7 +10,6 @@
  * 
  * So, all this does is step through a provided list of IPs and issue the shutdown command
  * through the API to those FPPs.
- * From the FPP Script Repository. The author was not attributed in that source.
  * 
  * License: CC0 1.0 Universal: This work has been marked as dedicated to the public domain.
  * 

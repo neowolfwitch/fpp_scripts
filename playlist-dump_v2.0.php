@@ -14,10 +14,12 @@
  * It pulls all information from "localhost". 
  * 
  * This should be manually run when the playlist changes.
- * It should not be set up to run automatically.
+ * Such as when using the shuffle.php script to shuffle a playlist.
  * 
  * It may take several minutes to run, depending on the size of the playlist.
  * It intentionally runs slowly, to avoid overtaxing the FPP REST API.
+ * 
+ * I use the FPP scheduler to run this once each day, after shuffle.php.
  * 
 */
 
