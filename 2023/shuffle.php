@@ -92,6 +92,7 @@ $i = 0;
 foreach ( $arrNew as $item ) {
     if ( $reminderList ) $c++;  //Don't increment if FALSE.
     if ( $c == $reminderInt ) {
+        //Insert "reminder" playlist...
         $c = 0;
         $outArray['mainPlaylist'][$i]['type'] = "playlist";
         $outArray['mainPlaylist'][$i]['enabled'] = "1";
