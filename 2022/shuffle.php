@@ -2,15 +2,14 @@
 /*** 
  * scramble.php
  * by Wolf I. Butler
- * v. 0.1, Last Updated: 11/29/2021
+ * v. 1.1, Last Updated: 08/19/2022
  * 
- * This script shuffles the input playlist, adds reminder messages, and outputs
+ * This script shuffles the $inList playlist, adds reminder messages, and outputs
  * the scrambled playlist for use.
  * 
  * This script should be run on the show-runner FPP as it creates a playlist for it to use.
  * Just schedule the script to run sometime before the playlist is used, and then play the
- * designated playlist. Of course you can scramble as often as you want, such as at every
- * repeat. You can't run the script as part of the playlist though- that just won't work.
+ * designated $outList playlist.
  * 
  * License: CC0 1.0 Universal: This work has been marked as dedicated to the public domain.
  * 
@@ -22,6 +21,8 @@
 
 //*** You must edit the following sections... ***
 //Since this script uses existing playlists and sequences, double-check the names!
+//Note that this script directly edits output playlist. If the playlist format changes in
+//future versions of FPP, it may need to be edited to output the correct format.
 
 $inList = "Main Music";             //Input playlist name. Must match a valid FPP playlist!
 //Note that lead-in and lead-out from this playlist will be used as-is in the new one.
@@ -40,10 +41,10 @@ $reminderInt = 7;       //Number of songs between reminder messages.
 //Note on song announcements:
 //If you announce certain non-Christmas or other songs, like "This is a Disney song..." the best way to
 //handle them is to put them in their own individual playlists, just containing your announcment and
-//the special song's sequecne, and then link those into your $inList playlist by just adding them as
+//the special song's sequence, and then link those into your $inList playlist by just adding them as
 //a playlist. This script will treat them appropriately.
 
-//* Don't edit anything after here. */
+//***** Don't edit anything after here. *****/
 
 //Get data from API
 function do_get ( $url ) {
