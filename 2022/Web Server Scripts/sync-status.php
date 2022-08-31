@@ -11,7 +11,9 @@
 */
 
 //You must set this...
-define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key. Must match key on FPP Master push-status.php script. 
+//The following should be a long random key or phrase.
+//This must match the "KEY" in the FPP server's push-status.php script.
+define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key. 
 
 //Leave the rest alone...
 
