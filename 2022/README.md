@@ -27,7 +27,6 @@ info-matrix.php runs on the Info Matrix. It automagically displays the current s
 info-config.php is the configuration file for info-matrix.php and needs to be somewhere readable by that script.
 
 Web Server Scripts are the API scripts on the Web server that accept the playlist and status data from the FPP Showrunner.
-
 They also display the playlist and Now Playing data for our Web site:
 
 sync-playlist.php accepts data from push-playlist.php and saves playlist.json to the Web root.
