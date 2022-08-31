@@ -74,17 +74,27 @@ function do_put ( $url, $data ) {
 }
 
 $loop = TRUE;
-$sleep = 10;   //Minimum Seconds
+$checkVal = null;
+$minSleep = 15;   //Minimum Seconds
 while ( $loop ) {
-     sleep ( $sleep );
      $arrStatus = do_get ( "http://localhost/api/system/status" );
      $arrPost['status'] = $arrStatus['status_name'];
      $arrPost['time'] = $arrStatus['time'];
+     $arrPost['timestamp'] = time();
      $arrPost['playlist'] = $arrStatus['current_playlist']['playlist'];
      $arrPost['seq'] = $arrStatus['current_sequence'];
      $arrPost['song'] = $arrStatus['current_song'];
      $arrPost['left'] = $arrStatus['seconds_remaining'];
-     $key = md5 ( KEY . time() );    //Passkey for Web server.
-     do_put ( WEB_SERVER . "/sync-status.php?key=$key", $arrPost );
+     //Only update the Web server if there has been a change...
+     if ( $checkVal != $arrPost['seq'] . $arrPost['song'] ) {
+        $checkVal = $arrPost['seq'] . $arrPost['song'];
+        $key = md5 ( KEY . time() );    //Passkey for Web server.
+        do_put ( WEB_SERVER . "/sync-status.php?key=$key", $arrPost );   
+     }
+     //Update faster if at the end of a song...
+     $left = intval ( $arrPost['left'] );
+     if ( $left < $minSleep ) $sleep = $left + 1;   //+1 to give next song a chance to start.
+     else $sleep = $minSleep; 
+     sleep ( $sleep );
 }
 ?>

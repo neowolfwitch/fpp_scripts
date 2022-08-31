@@ -2,28 +2,39 @@
 /*** 
  * info-matrix.php
  * by Wolf I. Butler
- * v. 2.2, Last Updated: 11/29/2021
+ * v. 3.0, Last Updated: 08/30/2022
  * 
  * Changes:
- *      Set up separate "Static" and "Intro" categories to treat them differently.
- *      Static is for pre/post show static light displays.
- *      Intro is for mid-show intros and welcome messages.
- *      Previously just Static was used for both, which was causing issues.
- * 
- * This script uses the FPP REST-API to display currently running sequence song info.
+ *  Now uses playlist and sync data from the Web server, instead of the FPP show runner/master.
+ *  This is to limit the load on the FPP Master, since the needed data is already being
+ *  pushed to the Web server to display the playlist and Now Playing. This also greatly
+ *  simplifies processing for display on the matrix.
+ *  Most of the script has been re-written to simplify it.
+ *  
+ * This script uses playlist and sync data from the Web server to display the currently running
+ * sequence information on an attached matrix using Overlay Models.
+ *
+ * It specifically needs playlist.json and playlist.sync, which should be automatically
+ * created on the Web server by the sync-playlist.php and sync-status.php scripts.
+ * The data for these files is pushed by the FPP Showrunner/Master using push-playlist.php 
+ * and push-status.php
+ *  
  * It also displays in-show information (such as a welcome message and tune-to info.)
  * If there isn't anything playing, it displays show schedule and any other information
  * from a file.
- *  
+ * 
  * This is designed to run on and FPP instance that is also controlling a matrix display
  * capable of displaying the text using a pixel overlay model. The simplest setup would be
  * a Raspberry Pi with a P10 Pi Hat connected to a set of configured P10 panels.
- * It will need network (wired or WIFI) access to your main show-runner FPP ("Master") so
- * it can obtain live sequence and media information.
+ * 
+ * Previous versions interacted directly with the Show Runner and required network access to the
+ * show network. This version (3.x+) only requires Internet access to reach the Web server
+ * used to display the playlist and Now Playing to the public.
+ * 
+ * If you are not running a Web server, you should use an older 2.x version of this script. 
  * 
  * This script should be run ONCE in the background using UserCallbackHook.sh which can be found
  * in the FPP Script Repository. Put it in the boot section so it only runs once on startup.
- * 
  * 
  * THIS SCRIPT RUNS A CONTINUIOUS LOOP! 
  * YOU MUST END IT WITH ' &' SO IT RUNS IN THE BACKGROUND, OR IT WILL PREVENT FPP FROM BOOTING!!!
@@ -34,8 +45,9 @@
  *      /bin/php /home/fpp/media/scripts/info-matrix.php &
  *      ;;
  * 
- * No other setup in FPP is necessary. There are no playlists to run, and the FPP doesn't need to be
- * a "Remote". The script runs in the background and outputs the appropriate text to the matrix.
+ * This script runs independently of anything else in FPP. The FPP instance should be set to "Player"
+ * mode. It does not need to be a remote and does not need to have any sequences or be synced to the
+ * show runner/master in any way.
  * 
  * This script uses code from "PixelOverlay-ScrollingText.php"
  * From the FPP Script Repository. The author was not attributed in that source.
@@ -61,8 +73,10 @@ define ( "POSTROLL", 'Please do not block driveways or traffic.' );
 define ( "GAP", "  -  " );
 
 //The following is used to display the text in FPP:
-$host  = "10.0.0.5";        # Host/ip of the FPP show-runner or other FPP instance with sequence and media data.
-$name  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
+$host  = "https://oakhillslights.com";  # Host/ip of the Web server with playlist.json and playlist.sync files.
+$playlistFile = "playlist.json";        # Full JSON playlist file on the Web server.
+$syncFile = "playlist.sync";            # JSON Sync file ("Now Playing" info) on the Web server.
+$overlayName  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
 $color = "RAND";            # Text Color (#FF0000) (also names like 'red', 'blue', etc.). Set to RAND for random color for each message.
 $font  = "Helvetica";       # Font Name
 $size  = 14;                # Font size
@@ -74,10 +88,10 @@ $antiAlias = true;          # Anti-Alias the text
 //Set to 2 for Transparent mode, or 3 for Transparent RGB
 $blockMode = 1;
 
-//Sleep time. This is a loop delay in seconds to prevent this script from overloading FPP.
+//Sleep time. This is a update delay in seconds.
 //It should always be at least 1 second, although it should be set higher if you notice performance
 //or display issues (including the wrong information for a sequence). Default is 5 seconds.
-$sleepTime = 5; //Seconds
+$sleepMin = 5; //Seconds
 
 //Idle file. This file contains show information played when a sequence isn't running.
 //For example, it can contain show schedule information.
@@ -95,10 +109,6 @@ $staticPrefix = "Static_";
 //This is for "Intro" displays with messages displayed DURING a show. We only want to display limited
 //information during these as they are short and won't have any music to pull data from.
 $introPrefix = "Intro_";
-
-//We want to display live show info on our Web site. The following file will contain the currently-playing
-//song information, or "(Idle)" if nothing is playing.
-$statusFile = "/home/fpp/media/upload/status.txt";
 
 /*
 * If a song has no MP3 tags, the script looks in the Uploads folder for a TXT
@@ -189,29 +199,29 @@ function idle_text () {
 }
 
 //Play text to matrix
-function play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay ) {
-    global $timer, $displayTime;
+function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay ) {
+    global $timer, $sleepTime, $displayTime;
 
     if ( $resetDisplay ) {
         //Attempt to clear the display.
-        do_get ( "http://localhost/api/overlays/model/$name/clear" );
-        do_put ( "http://localhost/api/overlays/model/$name/state", array( 'state' => 0 ) );
+        do_get ( "http://localhost/api/overlays/model/$overlayName/clear" );
+        do_put ( "http://localhost/api/overlays/model/$overlayName/state", array( 'state' => 0 ) );
     }
     else {
         //Don't do anything if there is an active effect.
-        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$name" );
-        if ( $arrStatus['effectRunning'] ) return FALSE;
+        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
+        if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) return FALSE;
     }
 
     $data = array( 'State' => $blockMode );
-    do_put ( "http://localhost/api/overlays/model/$name/state", $data );
+    do_put ( "http://localhost/api/overlays/model/$overlayName/state", $data );
 
     //Randomize colors if RAND was used.
     if ( $arrDispConfig['Color'] == 'RAND' ) {
         
         $total = 0;
         while ( $total < 255 ) {
-            //Setting minimum color brightness (~33%)
+            //Setting minimum color brightness. Roughly 1/3 total.
             $rd = rand ( 0, 255 );
             $gr = rand ( 0, 255 ); 
             $bl = rand ( 0, 255 );
@@ -228,10 +238,20 @@ function play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay 
         if ( strlen ( $bl ) < 2 ) $bl = '0' . $bl;
         $arrDispConfig['Color'] = '#' . $rd . $gr . $bl;
     }
+    
     $arrDispConfig['Message'] = $outText;
-    if ( $timer ) $displayTime = time() - $timer;
-    $timer = time();    //Start a new timer.
-    return do_put ( "http://localhost/api/overlays/model/$name/text", $arrDispConfig );
+
+    if ( $timer ) {
+        $displayTime = time() - $timer;
+        $timer = time();
+    }
+    else $timer = time();    //Start a new timer.
+
+    if ( $displayTime > $sleepTime ) $sleepTime = $displayTime;
+    echo "\nDisplay time: $displayTime";
+    echo "\nSleep Time: $sleepTime\n";
+    print_r ( $arrDispConfig );     //Debugging.
+    return do_put ( "http://localhost/api/overlays/model/$overlayName/text", $arrDispConfig );
 }
 
 //Init:
@@ -251,12 +271,30 @@ $arrDispConfig = array(
 //Loop continuously
 while (TRUE) {
 
+    $arrPlaylist = do_get ( $host . '/' . $playlistFile );
+    $arrStatus = do_get ( $host . '/' . $syncFile );
+    $sleepTime = $sleepMin; //Default
+
+    //Attempt to match currently playing song with the current playlist...
+    if ( isset ( $arrStatus['song'] ) ) {
+        $songTitle = FALSE;
+        $songArtist = FALSE;
+        $songAlbum = FALSE;
+        foreach ( $arrPlaylist as $value ) {
+            if ( $value['MediaName'] == $arrStatus['song'] ) {
+                if ( $value['Title'] ) $songTitle = html_entity_decode ( $value['Title'] );
+                if ( $value['Artist'] ) $songArtist = html_entity_decode ( $value['Artist'] );
+                if ( $value['Album'] ) $songAlbum = html_entity_decode ( $value['Album']);
+                break;
+            }
+        }
+    }
+
     $resetDisplay = FALSE;
-    $fppStatus = do_get( "http://$host/api/fppd/status" );
-
-    if ( $fppStatus['fppd'] ) {
-        //fpp is running and playing a sequence.
-
+ 
+    if ( $songTitle ) {
+        $outText = null;
+        
         //Display overrides...
 
         //Don't display anything if "display_blank.txt" exists.
@@ -270,7 +308,7 @@ while (TRUE) {
         //This prevents the display of sequence information for testing.
         if ( is_file ( '/home/fpp/media/upload/display_info.txt') ) {
             $outText = idle_text();
-            play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+            play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
             sleep (30);
             continue;
         };
@@ -279,10 +317,10 @@ while (TRUE) {
         //Play the show info instead.
         if ( isset ( $staticPrefix ) ) {
             $staticLen = strlen ( $staticPrefix );
-            $seq = $fppStatus['current_sequence'];
+            $seq = $arrStatus['seq'];
             if ( substr ( $seq, 0, $staticLen ) == $staticPrefix ) {
                 $outText = idle_text();
-                play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
                 sleep (30);
                 continue;
                 }
@@ -291,19 +329,19 @@ while (TRUE) {
         //Bypass sequence information if a "Intro" sequence is playing.
         if ( isset ( $introPrefix ) ) {
             $introLen = strlen ( $introPrefix );
-            $seq = $fppStatus['current_sequence'];
+            $seq = $arrStatus['seq'];
             if ( substr ( $seq, 0, $introLen ) == $introPrefix ) {
                 $outText = PREROLL . GAP . TUNE;
-                play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
                 sleep ($sleepTime);
                 continue;
             }
         };
 
-        //Display song information if possible.
-        $mp3 = $fppStatus['current_song'];
-        $mediaFile = '/home/fpp/media/music/' . $mp3;
-        $timeRemaining = intval ( $fppStatus['seconds_remaining'] );
+        //Display song information.        
+        $timeRemaining = intval ( ( $arrStatus['timestamp'] + $arrStatus['left'] ) - time() );
+        if ( $timeRemaining < 0 ) $timeRemaining = 0;   //sanity check.
+        echo "\nSong Time Remaining: $timeRemaining\n";
 
         if ( $displayTime ) {
             if ( $timeRemaining < $displayTime ) {
@@ -314,67 +352,27 @@ while (TRUE) {
                 }
                 //Not enough time to complete full text display. Just display Preroll and Tune.
                 $outText = PREROLL . GAP . TUNE;
-                play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
                 sleep ($sleepTime);
                 continue;
             }
         }
 
-        if ( $lastFile != $mediaFile ) {
-            //File change. Try to get new meta data.
-            $songTitle = FALSE;
-            $songArtist = FALSE;
-            $songAlbum = FALSE;
-            $lastFile = $mediaFile;
-            
-            $mp3URL = rawurlencode ( $mp3 );
-            $arrMeta = do_get ( "http://$host/api/media/$mp3URL/meta" );
-            $arrMediaInfo = $arrMeta['format']['tags'];
+        $outText = PREROLL . GAP;
+        $outText .= TUNE . GAP;
 
-            if ( $songTitle = $arrMediaInfo['title'] ) {
-                if ( $songArtist = $arrMediaInfo['artist'] ) $songAlbum = $arrMediaInfo['album'];
-                elseif ( $songArtist = $arrMediaInfo['album_artist'] ) $songAlbum = $arrMediaInfo['album'];
+        if ( $songTitle ) {
+            $outText .= 'Now Playing: ' . $songTitle ;
+            if ( $songArtist ) {
+                $outText .= ", By: " . $songArtist ;
             }
-
-            if ( ! $songTitle ) {
-                $arrMP3 = explode ( ".", $mp3 );
-                $songTitle = $arrMP3[0];    //Default to MP3 name.
-
-                //Assuming no MP3 tags found. Try to retrieve song information text file.
-                $info = "/home/fpp/media/upload/$songTitle.txt";
-                if ( is_file ( $info ) ) {
-                    $arrInfo = file ( $info );
-                    foreach ( $arrInfo as $index => $value ) {
-                        //Doing this way to limit errors if the file isn't formatted correctly.
-                        if ($index == 0) $songTitle = trim ( $value );
-                        if ($index == 1) $songArtist = trim ( $value );
-                        if ($index == 2) $songAlbum = trim ( $value );
-                        if ($index == 3) break;
-                    }
-                }
+            if ( $songAlbum ) {
+                $outText .= ", Album: " . $songAlbum ;
             }
-
-            $outText = PREROLL . GAP;
-            $outText .= TUNE . GAP;
-            $statusText = "(Idle)";
-            if ( $songTitle ) {
-                $outText .= 'Now Playing: ' . $songTitle ;
-                $statusText = 'Now Playing: ' . $songTitle ;
-                if ( $songArtist ) {
-                    $outText .= ", By: " . $songArtist ;
-                    $statusText .= "\nBy: " . $songArtist ;
-                }
-                if ( $songAlbum ) {
-                    $outText .= ", Album: " . $songAlbum ;
-                    $statusText .= "\nAlbum: " . $songAlbum ;
-                }
-                $outText .= GAP;
-            }
-            $outText .= POSTROLL;
-            $resetDisplay = TRUE;   //Display new media information immediately when available.
-            //file_put_contents ( $statusFile, $statusText );   //Not using for now.
+            $outText .= GAP;
         }
-
+        $outText .= POSTROLL;
+        $resetDisplay = TRUE;   //Display new media information immediately when available.
     }
     else {
         //fpp is not playing a sequnce. Display general information from file.
@@ -382,7 +380,7 @@ while (TRUE) {
     }
 
     //Display outText:
-    if ( $outText ) play_text ( $name, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+    if ( $outText ) play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
     sleep ($sleepTime);
 }
 ?>

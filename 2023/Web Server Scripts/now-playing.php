@@ -43,7 +43,7 @@ if ( isset ( $syncData['status'] ) ) {
         }
         if ( $songName ) {
             $msg = "<font size=\"+1\"><b>Now Playing:</b><br><b>$songName</b></font>\n";
-            if ( $songArtist ) $msg .= " by $songArtist\n";
+            if ( $songArtist ) $msg .= "<br>by $songArtist\n";
             $msg .= "<br><font size=\"-1\"><em>(As of $updateTime. May be delayed.)</></>\n";
         }
         else {
