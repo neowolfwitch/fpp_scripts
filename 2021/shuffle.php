@@ -4,8 +4,6 @@
  * by Wolf I. Butler
  * v. 1.1, Last Updated: 08/19/2022
  * 
- * Tested on FPP v. 5.0-6.0.2
- * 
  * This script shuffles the $inList playlist, adds reminder messages, and outputs
  * the scrambled playlist for use.
  * 
@@ -94,7 +92,6 @@ $i = 0;
 foreach ( $arrNew as $item ) {
     if ( $reminderList ) $c++;  //Don't increment if FALSE.
     if ( $c == $reminderInt ) {
-        //Insert "reminder" playlist...
         $c = 0;
         $outArray['mainPlaylist'][$i]['type'] = "playlist";
         $outArray['mainPlaylist'][$i]['enabled'] = "1";
