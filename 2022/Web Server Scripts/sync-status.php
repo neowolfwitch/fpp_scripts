@@ -2,7 +2,7 @@
 /*** 
  * fpp-sync.php
  * by Wolf I. Butler
- * v. 1.0, Last Updated: 08/25/2022
+ * v. 1.1, Last Updated: 08/31/2022
  * 
  * Accepts sync data from the FPP Master.
  * 

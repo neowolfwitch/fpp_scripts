@@ -2,7 +2,7 @@
 /*** 
  * now-playing.php
  * by Wolf I. Butler
- * v. 1.0, Last Updated: 10/15/2021
+ * v. 1.0, Last Updated: 08/31/2022
  * 
  * "Quick" script to display the current show status for the Web site.
  * Should be embedded in an iFrame under the playlist display, or wherever else you want.

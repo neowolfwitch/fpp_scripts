@@ -2,7 +2,7 @@
 /*** 
  * push-status.php
  * by Wolf I. Butler
- * v. 2.0, Last Updated: 08/23/2022
+ * v. 2.1, Last Updated: 08/31/2022
  * 
  * Pushes the current show status to the Web server.
  * 
