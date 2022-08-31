@@ -16,7 +16,7 @@
 //Just set these...
 define ( 'PATH', '/home/fpp/media/upload/' );       //Path to .txt info files for MP3s without meta data.
 define ( 'WEB_SERVER', 'https://oakhillslights.com' );    //Web server URL or IP.
-define ( 'KEY', 'Johmoh1AhfooFi7uwiek8thae4sitohv' );   //Base access key. Must match key on Web server.
+define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key. Must match key on Web server.
 define ( 'DEFAULT_PLAYLIST', 'Shuffled Xmas' );     //Default playlist. Used if nothing is running when this script runs.
 
 //Leave the rest alone...

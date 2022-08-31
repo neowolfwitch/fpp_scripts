@@ -12,7 +12,7 @@
 */
 
 //You must set this...
-define ( 'KEY', 'Johmoh1AhfooFi7uwiek8thae4sitohv' );   //Base access key. Must match key on FPP Master push-status.php script. 
+define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key. Must match key on FPP Master push-status.php script. 
 
 //Leave the rest alone...
 

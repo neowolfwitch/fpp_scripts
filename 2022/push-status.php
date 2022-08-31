@@ -25,7 +25,7 @@
 
 //Just set these...
 define ( 'WEB_SERVER', 'https://oakhillslights.com' );    //Web server URL or IP.
-define ( 'KEY', 'ahWo6yohkoh2Foec4caex0eeh9iebohC' );   //Base access key. Must match key on Web server.
+define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key. Must match key on Web server.
 
 //Leave the rest alone...
 
