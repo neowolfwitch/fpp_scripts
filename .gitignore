@@ -1,9 +1,3 @@
 .DS_Store
-Yuletide Window_Win_H.txt
-info-matrix.txt
-Little Drummer Boy Live.txt
-Magic Intro.txt
-display_blank.txt
-display_info.txt
-emergency_msg.sh
-playlist-display.php
+*.log
+*.txt
