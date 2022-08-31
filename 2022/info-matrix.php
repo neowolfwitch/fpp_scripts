@@ -2,7 +2,7 @@
 /*** 
  * info-matrix.php
  * by Wolf I. Butler
- * v. 3.0, Last Updated: 08/30/2022
+ * v. 3.1, Last Updated: 08/31/2022
  * 
  * Changes:
  *  Now uses playlist and sync data from the Web server, instead of the FPP show runner/master.
@@ -52,7 +52,8 @@
  * This script uses code from "PixelOverlay-ScrollingText.php"
  * From the FPP Script Repository. The author was not attributed in that source.
  * 
- * License: CC0 1.0 Universal: This work has been marked as dedicated to the public domain.
+ * License: GPLv3 
+ * See the LICENSE document attached to this distribution.
  * 
  * This script is provided ​“AS IS”. Developer makes no warranties, express or implied, 
  * and hereby disclaims all implied warranties, including any warranty of merchantability 
@@ -60,71 +61,10 @@
  * 
 */
 
-//*** You must edit the following sections... ***
-
-//PREROLL plays first, and might contain a welcome message.
-//TUNE should be your tune-to information. It plays after PREROLL.
-//Song information, if available, plays after TUNE.
-//POSTROLL plays after the above. I use this for reminder/courtesy info.
-//GAP is what to put between each element. It can just be spaces, or something like "... " or " - " or " * * * ".
-define ( "PREROLL", 'Welcome to Oak Hills Lights!' );
-define ( "TUNE", 'Tune To: 103.7 FM' );
-define ( "POSTROLL", 'Please do not block driveways or traffic.' );
-define ( "GAP", "  -  " );
-
-//The following is used to display the text in FPP:
-$host  = "https://oakhillslights.com";  # Host/ip of the Web server with playlist.json and playlist.sync files.
-$playlistFile = "playlist.json";        # Full JSON playlist file on the Web server.
-$syncFile = "playlist.sync";            # JSON Sync file ("Now Playing" info) on the Web server.
-$overlayName  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
-$color = "RAND";            # Text Color (#FF0000) (also names like 'red', 'blue', etc.). Set to RAND for random color for each message.
-$font  = "Helvetica";       # Font Name
-$size  = 14;                # Font size
-$pos   = "R2L";             # Position/Scroll: 'Center', 'L2R', 'R2L', 'T2B', 'B2T'
-$pps   = 55;                # Pixels Per Second to Scroll
-$antiAlias = true;          # Anti-Alias the text
-
-//Block mode. You should leave this at 1 unless you need to enable advanced functionality.
-//Set to 2 for Transparent mode, or 3 for Transparent RGB
-$blockMode = 1;
-
-//Sleep time. This is a update delay in seconds.
-//It should always be at least 1 second, although it should be set higher if you notice performance
-//or display issues (including the wrong information for a sequence). Default is 5 seconds.
-$sleepMin = 5; //Seconds
-
-//Idle file. This file contains show information played when a sequence isn't running.
-//For example, it can contain show schedule information.
-//Separate lines are split using GAP specified above.
-//***This file needs to be uploaded to the "Uploads" folder in FPP's file manager.***
-//It is loaded on every non-sequence loop iteration, so you can change it on-the-fly if you need to.
-$idleFile = "info-matrix.txt";
-
-//We have some "Static" light displays before and after our actual musical show. These emulate "old school"
-//christmas lights, or just include patterns that we don't need to display any other information about.
-//In these cases- we want to display the show information in the "idleFile" (above).
-//In order to do this- I am prefixing those file names with the text below.
-$staticPrefix = "Static_";
-
-//This is for "Intro" displays with messages displayed DURING a show. We only want to display limited
-//information during these as they are short and won't have any music to pull data from.
-$introPrefix = "Intro_";
-
-/*
-* If a song has no MP3 tags, the script looks in the Uploads folder for a TXT
-* file with the same name as the MP3. This file should contain three lines of text:
-* Title
-* Artist
-* Album
-* 
-* For example: Little Drummer Boy Live.txt :
-* Little Drummer Boy
-* for King & Country
-* Live Performance
-* 
-* If you don't have specific information, leave that line blank (with a CR/LF).
-* If there is no .TXT file, the name of the MP3 is displayed as the Title.
-*/
+//This file contains configuration information specific to this install.
+//See the info-config.php file for more info. You should only change this if you
+//are using a different configuration file or path. The full path is required!
+require_once ( '/home/fpp/media/scripts/info-config.php');
 
 /*
  ************************************************************************************
@@ -182,25 +122,60 @@ function do_get ( $url ) {
 
 //Load idle text display from file...
 function idle_text () {
-    global $idleFile;
+    global $idleFile, $preroll, $postroll, $gap;
     $info = "/home/fpp/media/upload/$idleFile";
     if ( is_file ( $info ) ) {
         $arrInfo = file ( $info );
         $outText = null;
         $gapFlag = FALSE;
         foreach ( $arrInfo as $value ) {
-            if ( $gapFlag ) $outText .= GAP;
+            if ( $gapFlag ) $outText .= $gap;
             else $gapFlag = TRUE;
             $outText .= trim ( $value );
         }
     }
-    else $outText = PREROLL . GAP . POSTROLL;   //If no file, display what we can.
+    else $outText = $preroll . $gap . $postroll;   //If no file, display what we can.
     return $outText;
+}
+
+//Simple logging function. Resets file at each run. Accepts array or text.
+function logger ( $logData ) {
+    global $logFile, $logFlag;
+    if ( ! isset ( $logFile ) ) return FALSE;
+    if ( ! isset ( $logFlag ) ) $logFlag = FALSE;
+    if ( ! is_string ( $logData ) ) $logData = var_export ( $logData, TRUE );
+    $logData = "$logData\n";
+    if ( $logFlag ) file_put_contents ( $logFile, $logData, FILE_APPEND );
+    else {
+        $logFlag = TRUE;
+        file_put_contents ( $logFile, $logData );
+    }
+}
+
+//Holds the loop until the current display output is finished.
+//Returns the approx. number of seconds it took for the display to finish.
+function display_wait () {
+    global $overlayName;
+    $timer = time();
+    $loop = TRUE;
+    while ( $loop ) {
+        logger ( "Waiting for current message to finish displaying...");
+        sleep ( 5 );    //no reason to beat things up over this.
+        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
+        if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) continue;
+        else $loop = FALSE;
+    }
+    return time() - $timer;
+}
+
+//Return first string from specified config file
+function read_config ( $file ) {
+    $arrFile = file ( $file );
+    return trim ( $arrFile[0] );
 }
 
 //Play text to matrix
 function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay ) {
-    global $timer, $sleepTime, $displayTime;
 
     if ( $resetDisplay ) {
         //Attempt to clear the display.
@@ -241,22 +216,13 @@ function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetD
     
     $arrDispConfig['Message'] = $outText;
 
-    if ( $timer ) {
-        $displayTime = time() - $timer;
-        $timer = time();
-    }
-    else $timer = time();    //Start a new timer.
+    logger ( $arrDispConfig );
 
-    if ( $displayTime > $sleepTime ) $sleepTime = $displayTime;
-    echo "\nDisplay time: $displayTime";
-    echo "\nSleep Time: $sleepTime\n";
-    print_r ( $arrDispConfig );     //Debugging.
     return do_put ( "http://localhost/api/overlays/model/$overlayName/text", $arrDispConfig );
 }
 
 //Init:
 $lastFile = null;
-$timer = FALSE;
 $displayTime = FALSE;
 
 $arrDispConfig = array(
@@ -271,9 +237,12 @@ $arrDispConfig = array(
 //Loop continuously
 while (TRUE) {
 
+    //Wait for the display to finish before looping again and return
+    //the number of seconds it took to finish.
+    $displayTime = display_wait();
+    
     $arrPlaylist = do_get ( $host . '/' . $playlistFile );
     $arrStatus = do_get ( $host . '/' . $syncFile );
-    $sleepTime = $sleepMin; //Default
 
     //Attempt to match currently playing song with the current playlist...
     if ( isset ( $arrStatus['song'] ) ) {
@@ -297,21 +266,28 @@ while (TRUE) {
         
         //Display overrides...
 
-        //Don't display anything if "display_blank.txt" exists.
-        //Use this if you don't want anything displayed at all.
-        if ( is_file ( '/home/fpp/media/upload/display_blank.txt') ) {
-            sleep (30);
+        if ( isset ( $override ) ) {
+            switch ( $override ) {
+                case ('blank') : 
+                    logger ( 'Not displaying anything. Blank override is in effect.' );
+                    sleep (30);
+                    break;
+                case ('info') :
+                    $outText = idle_text();
+                    logger ( 'Only displaying show info. Info override is in effect.' );
+                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                    break;
+                case ('emergency') :
+                    $outText = file_get_contents ( '/home/fpp/media/upload/info-emergency.txt' );
+                    logger ( 'Displaying emergency text info. Emergency override is in effect.' );
+                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                    break;
+                default :
+                    logger ( 'Invalid override specified in config file! Ignoring.' );
+                    unset ( $override );
+            }
             continue;
-        };
-
-        //Only display show info if "display_info.txt" file is found.
-        //This prevents the display of sequence information for testing.
-        if ( is_file ( '/home/fpp/media/upload/display_info.txt') ) {
-            $outText = idle_text();
-            play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-            sleep (30);
-            continue;
-        };
+        }           
 
         //Bypass sequence information if a "Static" sequence is playing.
         //Play the show info instead.
@@ -321,7 +297,6 @@ while (TRUE) {
             if ( substr ( $seq, 0, $staticLen ) == $staticPrefix ) {
                 $outText = idle_text();
                 play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-                sleep (30);
                 continue;
                 }
         };
@@ -331,47 +306,47 @@ while (TRUE) {
             $introLen = strlen ( $introPrefix );
             $seq = $arrStatus['seq'];
             if ( substr ( $seq, 0, $introLen ) == $introPrefix ) {
-                $outText = PREROLL . GAP . TUNE;
+                $outText = $preroll . $gap . $tune . $gap . $postroll;
                 play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-                sleep ($sleepTime);
                 continue;
             }
         };
 
+        //Re-load preroll, postroll, and tune-to info...
+        $preroll = read_config ( $uploadPath.'info-preroll.txt' );
+        $tune = read_config ( $uploadPath.'info-tune.txt' );
+        $postroll = read_config ( $uploadPath.'info-postroll.txt' );
+
         //Display song information.        
         $timeRemaining = intval ( ( $arrStatus['timestamp'] + $arrStatus['left'] ) - time() );
         if ( $timeRemaining < 0 ) $timeRemaining = 0;   //sanity check.
-        echo "\nSong Time Remaining: $timeRemaining\n";
+        logger ( "Song Time Remaining: $timeRemaining" );
+        logger ( "Display Time: $displayTime" );
 
         if ( $displayTime ) {
             if ( $timeRemaining < $displayTime ) {
-                if ( $timeRemaining <= $sleepTime ) {
-                    //Don't do anything. Song will be done before sleepTime is over.
-                    sleep (1);
-                    continue;
-                }
-                //Not enough time to complete full text display. Just display Preroll and Tune.
-                $outText = PREROLL . GAP . TUNE;
+                //Not enough time to complete full text display. Just display $preroll, $tune, and $postroll.
+                $outText = $preroll . $gap . $tune . $gap . $postroll;
                 play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-                sleep ($sleepTime);
                 continue;
             }
         }
 
-        $outText = PREROLL . GAP;
-        $outText .= TUNE . GAP;
+        $outText = $preroll . $gap;
+        $outText .= $tune . $gap;
 
         if ( $songTitle ) {
             $outText .= 'Now Playing: ' . $songTitle ;
             if ( $songArtist ) {
                 $outText .= ", By: " . $songArtist ;
             }
-            if ( $songAlbum ) {
-                $outText .= ", Album: " . $songAlbum ;
-            }
-            $outText .= GAP;
+            //Removing Album from display.
+            //if ( $songAlbum ) {
+            //    $outText .= ", Album: " . $songAlbum ;
+            //}
+            $outText .= $gap;
         }
-        $outText .= POSTROLL;
+        $outText .= $postroll;
         $resetDisplay = TRUE;   //Display new media information immediately when available.
     }
     else {
@@ -381,6 +356,5 @@ while (TRUE) {
 
     //Display outText:
     if ( $outText ) play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-    sleep ($sleepTime);
 }
 ?>
