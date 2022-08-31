@@ -12,7 +12,7 @@
  * in the FPP Script Repository. Put it in the boot section so it only runs once on startup.
  *
  * THIS SCRIPT RUNS A CONTINUIOUS LOOP! 
- * YOU MUST END IT WITH ' &' SO IT RUNS IN THE BACKGROUND, OR IT WILL PREVENT FPP FROM BOOTING!!!
+ * YOU MUST END IT WITH '&' SO IT RUNS IN THE BACKGROUND, OR IT WILL PREVENT FPP FROM BOOTING!!!
  * 
  * Like this:
  *    boot)		
