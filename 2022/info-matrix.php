@@ -2,22 +2,20 @@
 /*** 
  * info-matrix.php
  * by Wolf I. Butler
- * v. 3.1, Last Updated: 08/31/2022
+ * v. 3.2, Last Updated: 08/31/2022
  * 
  * Changes:
- *  Now uses playlist and sync data from the Web server, instead of the FPP show runner/master.
+ *  Now uses playlist data from the Web server, instead of the FPP show runner/master.
  *  This is to limit the load on the FPP Master, since the needed data is already being
  *  pushed to the Web server to display the playlist and Now Playing. This also greatly
  *  simplifies processing for display on the matrix.
  *  Most of the script has been re-written to simplify it.
  *  
- * This script uses playlist and sync data from the Web server to display the currently running
+ * This script uses playlist data from the Web server to display the currently running
  * sequence information on an attached matrix using Overlay Models.
  *
- * It specifically needs playlist.json and playlist.sync, which should be automatically
- * created on the Web server by the sync-playlist.php and sync-status.php scripts.
- * The data for these files is pushed by the FPP Showrunner/Master using push-playlist.php 
- * and push-status.php
+ * It specifically needs playlist.json which should be automatically
+ * created on the Web server by the sync-playlist.php script.
  *  
  * It also displays in-show information (such as a welcome message and tune-to info.)
  * If there isn't anything playing, it displays show schedule and any other information
@@ -26,10 +24,6 @@
  * This is designed to run on and FPP instance that is also controlling a matrix display
  * capable of displaying the text using a pixel overlay model. The simplest setup would be
  * a Raspberry Pi with a P10 Pi Hat connected to a set of configured P10 panels.
- * 
- * Previous versions interacted directly with the Show Runner and required network access to the
- * show network. This version (3.x+) only requires Internet access to reach the Web server
- * used to display the playlist and Now Playing to the public.
  * 
  * If you are not running a Web server, you should use an older 2.x version of this script. 
  * 
@@ -61,10 +55,10 @@
  * 
 */
 
-//This file contains configuration information specific to this install.
-//See the info-config.php file for more info. You should only change this if you
-//are using a different configuration file or path. The full path is required!
-require_once ( '/home/fpp/media/scripts/info-config.php');
+//You must edit the info-config.php configuration script, which should live in the same scripts folder
+//as this file. The default path follows. Change if necessary.
+//This file is read on every loop- so changes can be made "live" without restarting the server.
+$configFile = '/home/fpp/media/scripts/info-config.php';
 
 /*
  ************************************************************************************
@@ -154,14 +148,13 @@ function logger ( $logData ) {
 
 //Holds the loop until the current display output is finished.
 //Returns the approx. number of seconds it took for the display to finish.
-function display_wait () {
-    global $overlayName;
+function display_wait ( $overlay ) {
     $timer = time();
     $loop = TRUE;
     while ( $loop ) {
         logger ( "Waiting for current message to finish displaying...");
         sleep ( 5 );    //no reason to beat things up over this.
-        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
+        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlay" );
         if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) continue;
         else $loop = FALSE;
     }
@@ -222,35 +215,40 @@ function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetD
 }
 
 //Init:
-$lastFile = null;
-$displayTime = FALSE;
-
-$arrDispConfig = array(
-    'Color' => $color,
-    'Font' => $font,
-    'FontSize' => $size,
-    'AntiAlias' => $antiAlias,
-    'Position' => $pos,
-    'PixelsPerSecond' => $pps
-);
+$displayTime = 0;
 
 //Loop continuously
 while (TRUE) {
 
+    //Read this on every loop for "live" configuration changes.
+    include ( $configFile );
+
+    $arrDispConfig = array(
+        'Color' => $color,
+        'Font' => $font,
+        'FontSize' => $size,
+        'AntiAlias' => $antiAlias,
+        'Position' => $pos,
+        'PixelsPerSecond' => $pps
+    );
+    
     //Wait for the display to finish before looping again and return
     //the number of seconds it took to finish.
-    $displayTime = display_wait();
+    $displayTime = display_wait( $overlayName );
     
+    //Minimum display/loop time. Used to insure the wrong song info isn't displayed near the end of a song.
+    if ( $displayTime < 15 ) $displayTime = 15;
+
     $arrPlaylist = do_get ( $host . '/' . $playlistFile );
-    $arrStatus = do_get ( $host . '/' . $syncFile );
+    $arrStatus = do_get ( $master . '/api/system/status' );
 
     //Attempt to match currently playing song with the current playlist...
-    if ( isset ( $arrStatus['song'] ) ) {
+    if ( isset ( $arrStatus['current_song'] ) ) {
         $songTitle = FALSE;
         $songArtist = FALSE;
         $songAlbum = FALSE;
         foreach ( $arrPlaylist as $value ) {
-            if ( $value['MediaName'] == $arrStatus['song'] ) {
+            if ( $value['MediaName'] == $arrStatus['current_song'] ) {
                 if ( $value['Title'] ) $songTitle = html_entity_decode ( $value['Title'] );
                 if ( $value['Artist'] ) $songArtist = html_entity_decode ( $value['Artist'] );
                 if ( $value['Album'] ) $songAlbum = html_entity_decode ( $value['Album']);
@@ -293,7 +291,7 @@ while (TRUE) {
         //Play the show info instead.
         if ( isset ( $staticPrefix ) ) {
             $staticLen = strlen ( $staticPrefix );
-            $seq = $arrStatus['seq'];
+            $seq = $arrStatus['current_sequence'];
             if ( substr ( $seq, 0, $staticLen ) == $staticPrefix ) {
                 $outText = idle_text();
                 play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
@@ -304,7 +302,7 @@ while (TRUE) {
         //Bypass sequence information if a "Intro" sequence is playing.
         if ( isset ( $introPrefix ) ) {
             $introLen = strlen ( $introPrefix );
-            $seq = $arrStatus['seq'];
+            $seq = $arrStatus['current_sequence'];
             if ( substr ( $seq, 0, $introLen ) == $introPrefix ) {
                 $outText = $preroll . $gap . $tune . $gap . $postroll;
                 play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
@@ -312,24 +310,17 @@ while (TRUE) {
             }
         };
 
-        //Re-load preroll, postroll, and tune-to info...
-        $preroll = read_config ( $uploadPath.'info-preroll.txt' );
-        $tune = read_config ( $uploadPath.'info-tune.txt' );
-        $postroll = read_config ( $uploadPath.'info-postroll.txt' );
-
         //Display song information.        
-        $timeRemaining = intval ( ( $arrStatus['timestamp'] + $arrStatus['left'] ) - time() );
+        $timeRemaining = intval ( $arrStatus['seconds_remaining'] );
         if ( $timeRemaining < 0 ) $timeRemaining = 0;   //sanity check.
         logger ( "Song Time Remaining: $timeRemaining" );
         logger ( "Display Time: $displayTime" );
 
-        if ( $displayTime ) {
-            if ( $timeRemaining < $displayTime ) {
-                //Not enough time to complete full text display. Just display $preroll, $tune, and $postroll.
-                $outText = $preroll . $gap . $tune . $gap . $postroll;
-                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
-                continue;
-            }
+        if ( $timeRemaining < $displayTime ) {
+            //Not enough time to complete full text display. Just display $preroll, $tune, and $postroll.
+            $outText = $preroll . $gap . $tune . $gap . $postroll;
+            play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+            continue;
         }
 
         $outText = $preroll . $gap;
