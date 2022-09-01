@@ -12,9 +12,13 @@
 //Configuration .txt files will go here. FPP likes putting misc. files in the upload folder...
 $uploadPath = "/home/fpp/media/upload/";
 
-//Web server address. This will have the playlist.json and playlist.sync files used to
+//Web server address. This will have the playlist.json file used to
 //display the current system status.
-$host = 'https://example.com';
+$host = 'https://oakhillslights.com';
+
+//Show Runner (Master) FPP IP Address or hostname (if resolvable).
+//The primary FPP controller that runs the scheduler and playlists.
+$master = '10.0.0.5';
 
 //Displayed first in all messages:
 $preroll = 'Welcome to my cool light show!';
