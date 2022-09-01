@@ -24,7 +24,7 @@
 */
 
 //Just set these...
-define ( 'WEB_SERVER', 'https://oakhillslights.com' );    //Web server URL or IP.
+define ( 'WEB_SERVER', 'https://mywebserver.com' );    //Web server URL or IP.
 //The following should be a long random key or phrase.
 //This must match the "KEY" in the Web server's sync-status.php script.
 define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key.
