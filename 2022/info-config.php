@@ -4,7 +4,7 @@
  * 
  * Configuration file for info-matrix.php
  * 
- * This file is only ready on startup, so you need to reboot if you make any changes here.
+ * This file is read on each loop, so you can make changes (such as overrides or info changes) live.
  * It only sets variables, so it's pointless to actually run it outside of info-matrix.php. 
  *
  */
@@ -39,7 +39,6 @@ $gap = ' - ';
 
 //The following is used to display the text in FPP:
 $playlistFile = "playlist.json";        # Full JSON playlist file on the Web server.
-//$syncFile = "playlist.sync";            # JSON Sync file ("Now Playing" info) on the Web server. Not used anymore.
 $overlayName  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
 $color = "RAND";            # Text Color (#FF0000) (also names like 'red', 'blue', etc.). Set to RAND for random color for each message.
 $font  = "Helvetica";       # Font Name
