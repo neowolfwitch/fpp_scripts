@@ -153,7 +153,7 @@ function display_wait ( $overlay ) {
     $loop = TRUE;
     while ( $loop ) {
         logger ( "Waiting for current message to finish displaying...");
-        sleep ( 5 );    //no reason to beat things up over this.
+        sleep ( 5 );    //no reason to beat up the server over this.
         $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlay" );
         if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) continue;
         else $loop = FALSE;
@@ -239,7 +239,7 @@ while (TRUE) {
     //Minimum display/loop time. Used to insure the wrong song info isn't displayed near the end of a song.
     if ( $displayTime < 15 ) $displayTime = 15;
 
-    $arrPlaylist = do_get ( $host . '/' . $playlistFile );
+     $arrPlaylist = do_get ( $host . '/' . $playlistFile );
     $arrStatus = do_get ( $master . '/api/system/status' );
 
     //Attempt to match currently playing song with the current playlist...
@@ -338,7 +338,8 @@ while (TRUE) {
             $outText .= $gap;
         }
         $outText .= $postroll;
-        $resetDisplay = TRUE;   //Display new media information immediately when available.
+        //The following is no-longer needed.
+        //$resetDisplay = TRUE;   //Display new media information immediately when available.
     }
     else {
         //fpp is not playing a sequnce. Display general information from file.
