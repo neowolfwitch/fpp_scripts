@@ -14,7 +14,7 @@ $uploadPath = "/home/fpp/media/upload/";
 
 //Web server address. This will have the playlist.json file used to
 //display the current system status.
-$host = 'https://oakhillslights.com';
+$host = 'https://example.com';
 
 //Show Runner (Master) FPP IP Address or hostname (if resolvable).
 //The primary FPP controller that runs the scheduler and playlists.
@@ -39,7 +39,7 @@ $gap = ' - ';
 
 //The following is used to display the text in FPP:
 $playlistFile = "playlist.json";        # Full JSON playlist file on the Web server.
-$syncFile = "playlist.sync";            # JSON Sync file ("Now Playing" info) on the Web server.
+//$syncFile = "playlist.sync";            # JSON Sync file ("Now Playing" info) on the Web server. Not used anymore.
 $overlayName  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FPP! Use "+" for any spaces. URL Encode any other special chars.
 $color = "RAND";            # Text Color (#FF0000) (also names like 'red', 'blue', etc.). Set to RAND for random color for each message.
 $font  = "Helvetica";       # Font Name
