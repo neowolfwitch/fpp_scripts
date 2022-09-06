@@ -42,20 +42,20 @@ if ( isset ( $syncData['status'] ) ) {
             }
         }
         if ( $songName ) {
-            $msg = "<font size=\"+1\"><b>Now Playing:</b><br><b>$songName</b></font>\n";
+            $msg = "<font size=\"+1\"><b>Now Playing:<br>$songName</b></font>\n";
             if ( $songArtist ) $msg .= "<br>by $songArtist\n";
-            $msg .= "<br><font size=\"-1\"><em>(As of $updateTime. May be delayed.)</></>\n";
+            //$msg .= "<br><font size=\"-1\"><em>(As of $updateTime. May be delayed.)</></>\n";
         }
         else {
             //Unable to match song with playlist!
-            $msg = "<font size=\"+1\"><b>Show status is unavailable.</b><br</font><br>\n";
-            if ( $updateTime ) $msg .= "<font size=\"-1\"><em>(As of $updateTime.)</em></font>\n";
+            $msg = "<font size=\"+1\"><b>Show status is currently unavailable.</b><br</font><br>\n";
+            //if ( $updateTime ) $msg .= "<font size=\"-1\"><em>(As of $updateTime.)</em></font>\n";
         }
     }
     else {
         //FPP is idle
         $msg = "<font size=\"+1\"><b>Nothing is playing.</b><br</font><br>\n";
-        if ( $updateTime ) $msg .= "<font size=\"-1\"><em>(As of $updateTime.)</em></font>\n";
+        //if ( $updateTime ) $msg .= "<font size=\"-1\"><em>(As of $updateTime.)</em></font>\n";
     }
 }
 

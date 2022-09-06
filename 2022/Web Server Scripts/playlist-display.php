@@ -57,8 +57,7 @@ foreach ( $arrPlaylist as $item ) {
     if ( $item['MediaName'] == $arrSync['song'] ) {
         $nowPlaying = TRUE;
         echo "<tr>\n";
-        echo "<td class=\"np\"><b>Now Playing:</b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-        echo "<font size=\"-1\">(" . $arrSync['time'] . " * )</font><br><b>".$item['Title']."</b></td>\n";
+        echo "<td class=\"np\"><b>Now Playing:<br>".$item['Title']."</b></td>\n";
         echo "<td class=\"np\"><b>".$item['Artist']."</b></td>\n";
         echo "<td class=\"np\"><b>".$item['Album']."</b></td>\n";
         echo "<td class=\"np\"><b>".$item['RunTime']."</b></td>\n";
