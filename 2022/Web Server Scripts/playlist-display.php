@@ -53,8 +53,9 @@ $updateTime = date ( 'Y-m-d H:i:s', filectime ( PLAYLIST ) );
 
 $i = 0; //Init array index.
 $nowPlaying = FALSE;
-foreach ( $arrPlaylist as $item ) {
-    if ( $item['MediaName'] == $arrSync['song'] ) {
+foreach ( $arrPlaylist as $index => $item ) {
+    if ( $item['MediaName'] == $arrSync['song'] && ! $nowPlaying ) {
+        //Only flags first match as Now Playing. Dupes cause issues. :(
         $nowPlaying = TRUE;
         echo "<tr>\n";
         echo "<td class=\"np\"><b>Now Playing:<br>".$item['Title']."</b></td>\n";
@@ -77,7 +78,7 @@ foreach ( $arrPlaylist as $item ) {
 </tbody>
 </table>
 <?php
-if ( $nowPlaying ) echo "<div align=\"center\">*<em>Now Playing</em> information may be delayed or outdated. Please double-check date and time.</div>\n";
+if ( $nowPlaying ) echo "<div align=\"center\">*<em>Now Playing</em> information may be delayed or outdated.</div>\n";
 else echo "<div align=\"center\">(Nothing is playing right now. The playlist was last updated: " . $updateTime . ") </div>\n";
 ?>
 </BODY>
