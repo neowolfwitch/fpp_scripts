@@ -2,14 +2,17 @@
 /*** 
  * push-playlist.php
  * by Wolf I. Butler
- * v. 2.2, Last Updated: 09/06/2022
+ * v. 2.3, Last Updated: 09/12/2022
  * 
  * Pushes the current playlist to the Web server.
  * 
- * This should be run on the Show Runner (Master) FPP that is running the show.
+ * This should be run on the Show Runner (Master) FPP that runs the scheduler.
  * 
  * This script should be run any time there is a playlist change.
  * It is best to put it in the Lead In section of any regularly-used playlists.
+ * 
+ * It uses a caching system to reduce the chances of causing performance issues while a show is running.
+ * See $arrPeakHours below for details.
  * 
 */
 
@@ -23,10 +26,10 @@ define ( 'DEFAULT_PLAYLIST', 'Shuffled Xmas' );     //Default playlist. Used if 
 define ( 'DEBUG_MODE', TRUE );      //Set to TRUE to print out progress info.
 
 //Peak Hours (24-hour format) when we may be running our show.
-//If the script is run during one of these hours, the cache file will be used, instead of requesting MP3 metadata for all
+//If the script is run during any of these hours, the cache file will be used, instead of requesting MP3 metadata for all
 //songs from FPP. This is to insure the highest performance of FPP. During non-peak hours- the MP3 metadata is queried
 //and the cache is re-built.
-$arrPeakHours = array ( 16,17,18,19,20,21,22,23 );
+$arrPeakHours = array ( 15,16,17,18,19,20,21,22,23 );
 
 //Leave the rest alone...
 
@@ -41,7 +44,7 @@ function do_get ( $url ) {
 
     //Set timeouts to reasonable values:
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
     if ( $curlResult = curl_exec($ch) ) {
         $curlJSON = json_decode ( $curlResult, TRUE );
@@ -216,4 +219,5 @@ file_put_contents ( PATH . 'playlist.cache', json_encode( $arrPlaylist, JSON_PRE
 if ( DEBUG_MODE ) echo "Pushing playlist to Web server...\n";
 $key = md5 ( KEY . time() );    //Passkey for Web server.
 do_post ( WEB_SERVER . "/sync-playlist.php?key=$key", $arrPlaylist );
+echo "\nDone.\n";
 ?>

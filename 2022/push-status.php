@@ -2,7 +2,7 @@
 /*** 
  * push-status.php
  * by Wolf I. Butler
- * v. 2.1, Last Updated: 08/31/2022
+ * v. 2.2, Last Updated: 09/12/2022
  * 
  * Pushes the current show status to the Web server.
  * 
@@ -10,6 +10,8 @@
  * 
  * This script should be run ONCE in the background using UserCallbackHook.sh which can be found
  * in the FPP Script Repository. Put it in the boot section so it only runs once on startup.
+ * 
+ * DO NOT RUN THIS SCRIPT FROM THE FPP GUI OR CLI!
  *
  * THIS SCRIPT RUNS A CONTINUIOUS LOOP! 
  * YOU MUST END IT WITH '&' SO IT RUNS IN THE BACKGROUND, OR IT WILL PREVENT FPP FROM BOOTING!!!
@@ -41,7 +43,7 @@ function do_get ( $url ) {
     
     //Set timeouts to reasonable values:
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
 
     if ( $curlResult = curl_exec($ch) ) {
         $curlJSON = json_decode ( $curlResult, TRUE );
@@ -65,7 +67,7 @@ function do_put ( $url, $data ) {
 
     //Set timeouts to reasonable values:
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     
     //Execute the request
     $curlResult = curl_exec($ch);
@@ -77,7 +79,7 @@ function do_put ( $url, $data ) {
 
 $loop = TRUE;
 $checkVal = null;
-$minSleep = 15;   //Minimum Seconds
+$minSleep = 30;   //Minimum Seconds
 while ( $loop ) {
      $arrStatus = do_get ( "http://localhost/api/system/status" );
      $arrPost['status'] = $arrStatus['status_name'];
