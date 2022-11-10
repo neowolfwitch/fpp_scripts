@@ -125,7 +125,7 @@ function process_info ( $item, $cache = FALSE ) {
                 $arrMediaInfo['title'] = $value['Title'];
                 $arrMediaInfo['artist'] = $value['Artist'];
                 $arrMediaInfo['album'] = $value['Album'];
-                if ( DEBUG_MODE ) echo "Cached Item : " . $item['mediaName'] . "\n";
+                if ( DEBUG_MODE ) echo "Cached Item : " . $item['mediaName'];
                 break;
             }
         }
@@ -135,7 +135,7 @@ function process_info ( $item, $cache = FALSE ) {
     if ( ! isset ( $arrMediaInfo['title'] ) ) {
         $arrMeta = do_get ( "http://localhost/api/media/$mp3URL/meta" );
         $arrMediaInfo = $arrMeta['format']['tags'];   
-        if ( DEBUG_MODE ) echo "NOT Cached - " . $item['mediaName'] . "\n";
+        if ( DEBUG_MODE ) echo "NOT Cached - " . $item['mediaName'];
     }
  
     if ( isset ( $arrMediaInfo['title'] ) ) {
@@ -146,17 +146,21 @@ function process_info ( $item, $cache = FALSE ) {
 
         if ( isset ( $arrMediaInfo['album'] ) ) $songAlbum = $arrMediaInfo['album'];
     }
- 
+
+    //"Fix" Oak Hills Lights Intros. Most don't have metadata, or metadata is outdated.
+    if ( substr ( $item['mediaName'], 0, 4 ) == 'OHL-' ) {
+        $arrMP3 = explode ( ".", $item['mediaName'] );
+        $songTitle = $arrMP3[0];    //Default to MP3 name.
+        $songTitle = substr ( $songTitle, 4 );
+        $songTitle = str_replace ( '-', ' ', $songTitle );
+        $songTitle = 'Oak Hills Lights: ' . $songTitle;
+        $songArtist = '(Intro/Info)';
+        $songAlbum = 'OHL Intros';
+    }
+
     if ( ! $songTitle ) {
         $arrMP3 = explode ( ".", $item['mediaName'] );
         $songTitle = $arrMP3[0];    //Default to MP3 name.
-
-        if ( substr ( $songTitle, 0, 4 ) == 'OHL-' ) {
-            $songTitle = substr ( $songTitle, 4 );
-            $songTitle = 'Oak Hills Lights: ' . $songTitle;
-            $songArtist = '(Intro/Info)';
-            $songAlbum = 'OHL Intros';
-        }
 
         //Assuming no MP3 tags found. Try to retrieve song information text file.
         //This is used/done by the info-matrix.php script. See that script for details.
@@ -172,6 +176,8 @@ function process_info ( $item, $cache = FALSE ) {
             }
         }
     }
+
+    if ( DEBUG_MODE ) echo " => $songTitle\n";
 
     $arrPlaylist['RunTime'] = $strTime;
     $arrPlaylist['Title'] = $songTitle;

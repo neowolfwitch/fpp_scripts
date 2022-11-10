@@ -4,13 +4,6 @@
  * by Wolf I. Butler
  * v. 3.2, Last Updated: 08/31/2022
  * 
- * Changes:
- *  Now uses playlist data from the Web server, instead of the FPP show runner/master.
- *  This is to limit the load on the FPP Master, since the needed data is already being
- *  pushed to the Web server to display the playlist and Now Playing. This also greatly
- *  simplifies processing for display on the matrix.
- *  Most of the script has been re-written to simplify it.
- *  
  * This script uses playlist data from the Web server to display the currently running
  * sequence information on an attached matrix using Overlay Models.
  *
@@ -135,8 +128,7 @@ function idle_text () {
 //Simple logging function. Resets file at each run. Accepts array or text.
 function logger ( $logData ) {
     global $logFile, $logFlag;
-    if ( ! isset ( $logFile ) ) return FALSE;
-    if ( ! isset ( $logFlag ) ) $logFlag = FALSE;
+    if ( ! $logFlag ) return FALSE;
     if ( ! is_string ( $logData ) ) $logData = var_export ( $logData, TRUE );
     $logData = "$logData\n";
     if ( $logFlag ) file_put_contents ( $logFile, $logData, FILE_APPEND );
@@ -152,19 +144,13 @@ function display_wait ( $overlay ) {
     $timer = time();
     $loop = TRUE;
     while ( $loop ) {
-        logger ( "Waiting for current message to finish displaying...");
-        sleep ( 5 );    //no reason to beat up the server over this.
+        logger ( "Waiting for display to be idle...");
+        sleep ( 5 );    //no reason to beat up fpp over this.
         $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlay" );
         if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) continue;
         else $loop = FALSE;
     }
     return time() - $timer;
-}
-
-//Return first string from specified config file
-function read_config ( $file ) {
-    $arrFile = file ( $file );
-    return trim ( $arrFile[0] );
 }
 
 //Play text to matrix
@@ -215,13 +201,15 @@ function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetD
 }
 
 //Init:
-$displayTime = 0;
+$displayTime = null;
+$arrPlaylist = FALSE;
 
 //Loop continuously
 while (TRUE) {
 
     //Read this on every loop for "live" configuration changes.
     include ( $configFile );
+    if ( ! $arrPlaylist ) $arrPlaylist = do_get ( $host . '/' . $playlistFile );    //Only pull once
 
     $arrDispConfig = array(
         'Color' => $color,
@@ -239,8 +227,10 @@ while (TRUE) {
     //Minimum display/loop time. Used to insure the wrong song info isn't displayed near the end of a song.
     if ( $displayTime < 15 ) $displayTime = 15;
 
-     $arrPlaylist = do_get ( $host . '/' . $playlistFile );
     $arrStatus = do_get ( $master . '/api/system/status' );
+
+    logger ( $arrPlaylist );
+    logger ( $arrStatus );
 
     //Attempt to match currently playing song with the current playlist...
     if ( isset ( $arrStatus['current_song'] ) ) {
@@ -342,7 +332,7 @@ while (TRUE) {
         //$resetDisplay = TRUE;   //Display new media information immediately when available.
     }
     else {
-        //fpp is not playing a sequnce. Display general information from file.
+        //Unable to determine if a sequence is playing. Display general information from file.
         $outText = idle_text();
     }
 
