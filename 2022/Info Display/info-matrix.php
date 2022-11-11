@@ -145,7 +145,7 @@ function display_wait ( $overlay ) {
     $loop = TRUE;
     while ( $loop ) {
         logger ( "Waiting for display to be idle...");
-        sleep ( 5 );    //no reason to beat up fpp over this.
+        sleep ( 2 );    //no reason to beat up fpp over this.
         $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlay" );
         if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) continue;
         else $loop = FALSE;
@@ -154,18 +154,11 @@ function display_wait ( $overlay ) {
 }
 
 //Play text to matrix
-function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay ) {
+function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig ) {
 
-    if ( $resetDisplay ) {
-        //Attempt to clear the display.
-        do_get ( "http://localhost/api/overlays/model/$overlayName/clear" );
-        do_put ( "http://localhost/api/overlays/model/$overlayName/state", array( 'state' => 0 ) );
-    }
-    else {
-        //Don't do anything if there is an active effect.
-        $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
-        if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) return FALSE;
-    }
+    //Don't do anything if there is an active effect.
+    $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
+    if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) return FALSE;
 
     $data = array( 'State' => $blockMode );
     do_put ( "http://localhost/api/overlays/model/$overlayName/state", $data );
@@ -246,8 +239,6 @@ while (TRUE) {
             }
         }
     }
-
-    $resetDisplay = FALSE;
  
     if ( $songTitle ) {
         $outText = null;
@@ -263,12 +254,12 @@ while (TRUE) {
                 case ('info') :
                     $outText = idle_text();
                     logger ( 'Only displaying show info. Info override is in effect.' );
-                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
                     break;
                 case ('emergency') :
                     $outText = file_get_contents ( '/home/fpp/media/upload/info-emergency.txt' );
                     logger ( 'Displaying emergency text info. Emergency override is in effect.' );
-                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                    play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
                     break;
                 default :
                     logger ( 'Invalid override specified in config file! Ignoring.' );
@@ -284,7 +275,7 @@ while (TRUE) {
             $seq = $arrStatus['current_sequence'];
             if ( substr ( $seq, 0, $staticLen ) == $staticPrefix ) {
                 $outText = idle_text();
-                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
                 continue;
                 }
         };
@@ -295,7 +286,7 @@ while (TRUE) {
             $seq = $arrStatus['current_sequence'];
             if ( substr ( $seq, 0, $introLen ) == $introPrefix ) {
                 $outText = $preroll . $gap . $tune . $gap . $postroll;
-                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+                play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
                 continue;
             }
         };
@@ -309,7 +300,7 @@ while (TRUE) {
         if ( $timeRemaining < $displayTime ) {
             //Not enough time to complete full text display. Just display $preroll, $tune, and $postroll.
             $outText = $preroll . $gap . $tune . $gap . $postroll;
-            play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+            play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
             continue;
         }
 
@@ -328,8 +319,6 @@ while (TRUE) {
             $outText .= $gap;
         }
         $outText .= $postroll;
-        //The following is no-longer needed.
-        //$resetDisplay = TRUE;   //Display new media information immediately when available.
     }
     else {
         //Unable to determine if a sequence is playing. Display general information from file.
@@ -337,6 +326,6 @@ while (TRUE) {
     }
 
     //Display outText:
-    if ( $outText ) play_text ( $overlayName, $outText, $blockMode, $arrDispConfig, $resetDisplay );
+    if ( $outText ) play_text ( $overlayName, $outText, $blockMode, $arrDispConfig );
 }
 ?>
