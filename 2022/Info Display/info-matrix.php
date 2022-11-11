@@ -155,7 +155,8 @@ function display_wait ( $overlay ) {
 
 //Play text to matrix
 function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig ) {
-
+    global $randValues;
+    
     //Don't do anything if there is an active effect.
     $arrStatus = do_get ( "http:/localhost/api/overlays/model/$overlayName" );
     if ( isset ( $arrStatus['effectRunning'] ) && $arrStatus['effectRunning'] > 0 ) return FALSE;
@@ -168,10 +169,10 @@ function play_text ( $overlayName, $outText, $blockMode, $arrDispConfig ) {
         
         $total = 0;
         while ( $total < 255 ) {
-            //Setting minimum color brightness. Roughly 1/3 total.
-            $rd = rand ( 0, 255 );
-            $gr = rand ( 0, 255 ); 
-            $bl = rand ( 0, 255 );
+            //Adjust these to get the color range you want. The above sets a minimum overall brightness.
+            $rd = rand ( $randValues['red_low'], $randValues['red_high'] );
+            $gr = rand ( $randValues['green_low'], $randValues['green_high'] );
+            $bl = rand ( $randValues['blue_low'], $randValues['blue_high'] );
             $total = $rd + $gr + $bl;
         }
 
@@ -202,6 +203,7 @@ while (TRUE) {
 
     //Read this on every loop for "live" configuration changes.
     include ( $configFile );
+
     if ( ! $arrPlaylist ) $arrPlaylist = do_get ( $host . '/' . $playlistFile );    //Only pull once
 
     $arrDispConfig = array(
