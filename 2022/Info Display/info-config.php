@@ -7,18 +7,20 @@
  * This file is read on each loop, so you can make changes (such as overrides or info changes) live.
  * It only sets variables, so it's pointless to actually run it outside of info-matrix.php. 
  *
+ * Version 4.0, Updated 11/28/2022
+ * Remove need to download the current playlist from a Web server. This was problematic and required
+ * Internet access which a show network may not have. We are now pulling the playlist directly from
+ * the configured Show Runner (Master).
+ * 
  */
 
 //Log activity TRUE/FALSE:
 $logFlag = FALSE;
 $logFile = '/home/fpp/media/logs/info-matrix.log';
 
-//Configuration .txt files will go here. FPP likes putting misc. files in the upload folder...
+//Configuration .txt files will go here. FPP likes putting misc. files in the /media/upload folder.
+//Generally you shouldn't change this unless you have modified FPP's file structure.
 $uploadPath = "/home/fpp/media/upload/";
-
-//Web server address. This will have the playlist.json file used to
-//display the current system status.
-$host = 'https://example.com';
 
 //Show Runner (Master) FPP IP Address or hostname (if resolvable).
 //The primary FPP controller that runs the scheduler and playlists.
@@ -82,4 +84,5 @@ $staticPrefix = "Static_";
 //This is for "Intro" displays with messages displayed DURING a show. We only want to display limited
 //information during these as they are short and won't have any music to pull data from.
 $introPrefix = "Intro_";
+
 ?>

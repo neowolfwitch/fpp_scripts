@@ -2,14 +2,16 @@
 /*** 
  * info-matrix.php
  * by Wolf I. Butler
- * v. 3.2, Last Updated: 08/31/2022
+ * v. 4.0, Last Updated: 11/28/2022
  * 
- * This script uses playlist data from the Web server to display the currently running
- * sequence information on an attached matrix using Overlay Models.
- *
- * It specifically needs playlist.json which should be automatically
- * created on the Web server by the sync-playlist.php script.
+ * Removed need to download the current playlist from a Web server. This was problematic and required
+ * Internet access which a show network may not have. It also just had too many moving parts as it
+ * relied on the Web server's copy of the playlist being updated all the time.
+ * We are now pulling the playlist directly from the configured Show Runner (Master).
  *  
+ * This script obrtains the current song information from the Show Runner (Master) FPP to display 
+ * the currently running sequence information on an attached matrix using Overlay Models.
+ * 
  * It also displays in-show information (such as a welcome message and tune-to info.)
  * If there isn't anything playing, it displays show schedule and any other information
  * from a file.
@@ -223,22 +225,23 @@ while (TRUE) {
     if ( $displayTime < 15 ) $displayTime = 15;
 
     $arrStatus = do_get ( $master . '/api/system/status' );
-
-    logger ( $arrPlaylist );
-    logger ( $arrStatus );
-
-    //Attempt to match currently playing song with the current playlist...
+    
     if ( isset ( $arrStatus['current_song'] ) ) {
-        $songTitle = FALSE;
-        $songArtist = FALSE;
-        $songAlbum = FALSE;
-        foreach ( $arrPlaylist as $value ) {
-            if ( $value['MediaName'] == $arrStatus['current_song'] ) {
-                if ( $value['Title'] ) $songTitle = html_entity_decode ( $value['Title'] );
-                if ( $value['Artist'] ) $songArtist = html_entity_decode ( $value['Artist'] );
-                if ( $value['Album'] ) $songAlbum = html_entity_decode ( $value['Album']);
-                break;
-            }
+        if ( $arrStatus['current_song'] != $lastSong ) {
+            //Get new song information...
+            $lastSong = $arrStatus['current_song']; //Save
+            $media = rawurlencode ( $arrStatus['current_song'] );
+            $arrMeta = do_get ( $master . '/api/media/' . $media . '/meta' );
+            logger ( $master . '/api/media/' . $media . '/meta' );
+            $arrTags = $arrMeta['format']['tags'];
+            logger ( 'arrTags:');
+            logger ( $arrTags );
+            $songTitle = FALSE;
+            $songArtist = FALSE;
+            $songAlbum = FALSE;
+            if ( isset ( $arrTags['title'] ) ) $songTitle = $arrTags['title'];
+            if ( isset ( $arrTags['artist'] ) ) $songArtist = $arrTags['artist'];
+            if ( isset ( $arrTags['album'] ) ) $songAlbum = $arrTags['album'];
         }
     }
  
