@@ -18,10 +18,10 @@
 
 //Just set these...
 define ( 'PATH', '/home/fpp/media/upload/' );       //Path to .txt info files for MP3s without meta data.
-define ( 'WEB_SERVER', 'https://example.com' );    //Web server URL or IP.
+define ( 'WEB_SERVER', 'https://oakhillslights.com' );    //Web server URL or IP.
 //The following should be a long random key or phrase.
 //This must match the "KEY" in the Web server's sync-playlist.php script.
-define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key.
+define ( 'KEY', 'eijeiGh8ohgeevoofee7thae3Ucoop7o' );   //Base access key.
 define ( 'DEFAULT_PLAYLIST', 'Shuffled Xmas' );     //Default playlist. Used if nothing is running when this script runs.
 define ( 'DEBUG_MODE', TRUE );      //Set to TRUE to print out progress info.
 
@@ -135,7 +135,7 @@ function process_info ( $item, $cache = FALSE ) {
     if ( ! isset ( $arrMediaInfo['title'] ) ) {
         $arrMeta = do_get ( "http://localhost/api/media/$mp3URL/meta" );
         $arrMediaInfo = $arrMeta['format']['tags'];   
-        if ( DEBUG_MODE ) echo "NOT Cached - " . $item['mediaName'];
+	if ( DEBUG_MODE ) echo "NOT Cached - " . $item['mediaName'];
     }
  
     if ( isset ( $arrMediaInfo['title'] ) ) {
@@ -146,8 +146,8 @@ function process_info ( $item, $cache = FALSE ) {
 
         if ( isset ( $arrMediaInfo['album'] ) ) $songAlbum = $arrMediaInfo['album'];
     }
-
-    //"Fix" Oak Hills Lights Intros. Most don't have metadata, or metadata is outdated.
+ 
+    //"Fix" Oak Hills Lights Intros.
     if ( substr ( $item['mediaName'], 0, 4 ) == 'OHL-' ) {
         $arrMP3 = explode ( ".", $item['mediaName'] );
         $songTitle = $arrMP3[0];    //Default to MP3 name.
@@ -176,9 +176,7 @@ function process_info ( $item, $cache = FALSE ) {
             }
         }
     }
-
     if ( DEBUG_MODE ) echo " => $songTitle\n";
-
     $arrPlaylist['RunTime'] = $strTime;
     $arrPlaylist['Title'] = $songTitle;
     if ( $songArtist ) $arrPlaylist['Artist'] = $songArtist;
@@ -189,9 +187,10 @@ function process_info ( $item, $cache = FALSE ) {
  
 if ( DEBUG_MODE ) echo "\nStarting playlist processing...\n";   //Debugging
 //Get currently-running playlist from FPP...
-$status = do_get ( "http://localhost/api/system/status" );
-if ( $status['current_playlist']['playlist'] ) $listName = $status['current_playlist']['playlist'];
-else $listName = DEFAULT_PLAYLIST;
+//$status = do_get ( "http://localhost/api/system/status" );
+//if ( $status['current_playlist']['playlist'] ) $listName = $status['current_playlist']['playlist'];
+//else $listName = DEFAULT_PLAYLIST;
+$listName = DEFAULT_PLAYLIST;
 
 //Get playlist data from FPP...
 $listName = rawurlencode ( $listName );
@@ -227,3 +226,4 @@ $key = md5 ( KEY . time() );    //Passkey for Web server.
 do_post ( WEB_SERVER . "/sync-playlist.php?key=$key", $arrPlaylist );
 echo "\nDone.\n";
 ?>
+
