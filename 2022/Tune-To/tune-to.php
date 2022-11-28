@@ -2,11 +2,11 @@
 /*** 
  * tune-to.php
  * by Wolf I. Butler
- * v. 1.1, Last Updated: 11/21/2022
+ * v.1.2, Last Updated: 11/28/2022
  * 
  * This script just displays text on our smaller "Tune-To" sign.
  * 
- * This is designed to run on and FPP instance that is also controlling a matrix display
+ * This is designed to run on an FPP instance that is also controlling a matrix display
  * capable of displaying the text using a pixel overlay model. The simplest setup would be
  * a Raspberry Pi with a P10 Pi Hat connected to a set of configured P10 panels.
  *  
@@ -16,7 +16,7 @@
  * THIS SCRIPT RUNS A CONTINUIOUS LOOP! 
  * YOU MUST END IT WITH ' &' SO IT RUNS IN THE BACKGROUND, OR IT WILL PREVENT FPP FROM BOOTING!!!
  * 
- * Like this:
+ * Like this (in userCallbackHook.sh):
  *    boot)		
  *      # put your commands here
  *      /bin/php /home/fpp/media/scripts/info-matrix.php &
@@ -24,7 +24,7 @@
  * 
  * This script runs independently of anything else in FPP. The FPP instance should be set to "Player"
  * mode. It does not need to be a remote and does not need to have any sequences or be synced to the
- * show runner/master in any way.
+ * show runner/master in any way. You should exclude it from xLights' FPP Connect as-well.
  * 
  * This script uses code from "PixelOverlay-ScrollingText.php"
  * From the FPP Script Repository. The author was not attributed in that source.
@@ -38,7 +38,7 @@
  * 
 */
 
-//You must edit the info-config.php configuration script, which should live in the same scripts folder
+//You must edit the tune-config.php configuration script, which should live in the same scripts folder
 //as this file. The default path follows. Change if necessary.
 //This file is read on every loop- so changes can be made "live" without restarting the server.
 $configFile = '/home/fpp/media/scripts/tune-config.php';
