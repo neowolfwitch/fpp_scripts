@@ -2,6 +2,7 @@
 /*** 
  * library.php
  * by Wolf I. Butler
+ * v. 1.1, Last Updated: 12/06/2022
  * 
  * Part of the Oak Hills Lights Web status system.
  * 
