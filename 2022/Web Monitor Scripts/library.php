@@ -40,6 +40,33 @@ function do_get ( $url ) {
     return FALSE;
 }
 
+function do_put ( $url, $data ) {
+
+    $data = json_encode($data);     //The API uses JSON.
+    //Initiate cURL.
+    $ch = curl_init($url);
+    //Tell cURL that we want to send a PUT request.
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PUT');
+    
+    //Attach our encoded JSON string to the PUT fields.
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    
+    //Set the content type to application/json
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    //Set timeouts to reasonable values:
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+    
+    //Execute the request
+    if ( $curlResult = curl_exec($ch) ) {
+        $arrReturn = json_decode ( $curlResult, TRUE );
+        return $arrReturn;
+    }
+    return FALSE;
+}
+
 function ping ( $host ) {
     //Since running ping through exec is SLOW, using cURL instead...
     $ch = curl_init($host);

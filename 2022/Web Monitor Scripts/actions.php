@@ -21,24 +21,25 @@
  * 
 */
 ?>
-<script src="https://code.jquery.com/jquery-3.6.1.min.js" 
-    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
-    crossorigin="anonymous"></script>
+<script src="jquery-3.6.1.min.js"></script>
 
 <script>
-async function runAjax($url){
+
+async function runGet($url){
     $.ajax({
         type: "GET",
         url: $url
     } );
     return;
 }
+
 async function fppGet($url){
-    //This is necessary to wait for the runAjax function to finish.
-    await runAjax($url);
+    //This is necessary to wait for the runGet function to finish.
+    await runGet($url);
     $('#playing').load('playing.php');
     $('#status').load('status.php');
 }
+
 </script>
 
 <?php
@@ -55,7 +56,6 @@ foreach ( $arrActions as $action ) {
 
     $label = $action['label'];
     $url = $action['url'];
-
     echo "<button class=\"button-blue\" onclick=\"fppGet('$url')\">$label</button>\n";
     echo "</td>";
     if ( $i == $actionCols ) {

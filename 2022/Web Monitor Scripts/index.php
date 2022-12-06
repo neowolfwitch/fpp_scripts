@@ -20,9 +20,7 @@
 
 ?>
 <html><head>
-<script src="https://code.jquery.com/jquery-3.6.1.min.js" 
-    integrity="sha256-o88AwQnZB+VDvE9tvIXrMQaPlFFSUTR+nldQm1LuPXQ="
-    crossorigin="anonymous"></script>
+<script src="jquery-3.6.1.min.js"></script>
 <script src="library.js"></script>
 <meta charset="UTF-8">
 <link rel="stylesheet" type="text/css" href="status.css">

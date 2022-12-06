@@ -41,24 +41,25 @@ $arrControllers = array(
  *      'label' => 'PAUSE', 
  *      'url' => "http://10.0.0.5/api/playlists/pause" 
  * ),
- * 
- * A toggle button can also be set up by separating options with a ^ and adding "url2":
- * array(
- *        'label' => 'PAUSE^RESUME',
- *        'url' => "http://10.0.0.5/api/playlists/pause",
- *        'url2' => "http://10.0.0.5/api/playlists/resume"
- * ),
  *
+ * For command/playlist functions, the format is:
+ * array(
+ *     'label' => 'Play: NRL',
+ *     'url' => "http://10.0.0.5/api/command/Start+Playlist/Playlist+Name/true/false"
+ * ),
+ * The entry after the Playlist Name is for REPEAT (true/false)
+ * The second entry is for "If not already playing." (true/false)
+ * 
 **/
 
-//Be sure to use the IP address of the Show Runner.
+//Be sure to use the IP address of the Show Runner. Use the remote IP address for remote scripts.
 $arrActions = array(
      array(
-          'label' => '&lt;PREV',
+          'label' => '&lt; PREV',
           'url' => "http://10.0.0.5/api/command/Prev+Playlist+Item"
      ),
      array(
-          'label' => 'NEXT&gt;',
+          'label' => 'NEXT &gt;',
           'url' => "http://10.0.0.5/api/command/Next+Playlist+Item"
      ),
      array(
@@ -74,7 +75,7 @@ $arrActions = array(
           'url' => "http://10.0.0.5/api/playlists/stop"
      ),
      array(
-          'label' => 'Reset FPP/Scheduler',
+          'label' => 'Reset System/Schedule',
           'url' => "http://10.0.0.5/api/system/fppd/restart"
      ),
      array(
@@ -83,23 +84,23 @@ $arrActions = array(
      ),
      array(
           'label' => 'Play: Shuffled Xmas',
-          'url' => "http://10.0.0.5/api/playlist/Shuffled+Xmas/start"
+          'url' => "http://10.0.0.5/api/command/Start+Playlist/Shuffled+Xmas/true/false"
      ),
      array(
           'label' => 'Play: DRL',
-          'url' => "http://10.0.0.5/api/playlist/DRL/start"
+          'url' => "http://10.0.0.5/api/command/Start+Playlist/DRL/true/false"
      ),
      array(
           'label' => 'Play: NRL',
-          'url' => "http://10.0.0.5/api/playlist/NRL/start"
+          'url' => "http://10.0.0.5/api/command/Start+Playlist/NRL/true/false"
      ),
      array(
           'label' => 'Power ON',
-          'url' => "http://10.0.0.33/api/scripts/Power-On.sh/run"
+          'url' => "http://10.0.0.5/api/command/Start+Playlist/Main+Power+On/false/false"
      ),
      array(
-          'label' => 'Power OFF',
-          'url' => "http://10.0.0.33/api/scripts/Power-Off.sh/run"
+          'label' => 'Shutdown',
+          'url' => "http://10.0.0.5/api/command/Start+Playlist/Safe+Shutdown/false/false"
      ),
 
 );
