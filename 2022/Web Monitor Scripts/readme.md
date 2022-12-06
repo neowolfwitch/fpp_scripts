@@ -25,5 +25,5 @@ Safe Shutdown playlist. This runs the following sequence:
  * Wait 15 seconds to give them a chance to shut down.
  * Send a Power-Off command to our power managment system, turning off the show's power.
 
-The script files are well-documented and should be easy enough to figure out. These are being made availalbe as-is with no warranty
+The script files are fairly well-documented and should be easy enough to figure out. These are being made availalbe as-is with no warranty
 or support.
