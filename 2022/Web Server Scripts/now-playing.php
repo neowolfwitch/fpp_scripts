@@ -54,7 +54,7 @@ if ( isset ( $syncData['status'] ) ) {
     }
     else {
         //FPP is idle
-        $msg = "<font size=\"+1\"><b>Nothing is playing.</b><br</font><br>\n";
+        $msg = "<font size=\"+1\"><b>Nothing is playing right now.</b><br</font><br>\n";
         //if ( $updateTime ) $msg .= "<font size=\"-1\"><em>(As of $updateTime.)</em></font>\n";
     }
 }

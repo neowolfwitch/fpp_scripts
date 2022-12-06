@@ -1,8 +1,8 @@
 <?php
 /*** 
- * tune-to.php
+ * shutdown.php
  * by Wolf I. Butler
- * v. 1.1, Last Updated: 11/21/2022
+ * v. 1.2, Last Updated: 11/28/2022
  * 
  * This script sends the shutdown command to all configured computers/controllers.
  * It should be run before powering the system down, just to safegard the systems.
@@ -20,6 +20,7 @@ $controllers = array (
      'K16A-B-Tree' => '10.0.0.10',
      'K40D-PB-1' => '10.0.0.11',
      'K40D-PB-2' => '10.0.0.12',
+     'Optoma-Projector' => '10.0.0.16',
      'Column-Left' => '10.0.0.21',
      'Column-Center' => '10.0.0.22',
      'Column-Right' => '10.0.0.23',
