@@ -90,6 +90,10 @@ $arrActions = array(
           'url' => "http://10.0.0.5/api/playlist/DRL/start"
      ),
      array(
+          'label' => 'Play: NRL',
+          'url' => "http://10.0.0.5/api/playlist/NRL/start"
+     ),
+     array(
           'label' => 'Power ON',
           'url' => "http://10.0.0.33/api/scripts/Power-On.sh/run"
      ),
