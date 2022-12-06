@@ -4,7 +4,7 @@
  * config.php
  *
  * by Wolf I. Butler
- * v. 1.0, Last Updated: 09/19/2022
+ * v. 1.1, Last Updated: 12/06/2022
  * 
  * Part of the Oak Hills Lights Web status system.
  * 
@@ -99,7 +99,7 @@ $arrActions = array(
           'url' => "http://10.0.0.5/api/command/Start+Playlist/Main+Power+On/false/false"
      ),
      array(
-          'label' => 'Shutdown',
+          'label' => 'Safe Shutdown',
           'url' => "http://10.0.0.5/api/command/Start+Playlist/Safe+Shutdown/false/false"
      ),
 
