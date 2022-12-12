@@ -31,6 +31,8 @@ foreach ( $arrControllers as $ip => $name ) {
     else $arrStatus[$name] = FALSE;
 }
 
+//Get the power relay model names and status from the power controller.
+//Used to display their on/off status after the rest of the controllers below.
 $arrPower = do_get( "http://$powerIP/api/overlays/models");
 
 //System Status...
