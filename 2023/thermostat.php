@@ -9,7 +9,7 @@
  * 
  * It uses FPP pixel overlay models to toggle GPIO-attached relays that control two sets of
  * cooling fans and a (12v) heater (portable automotive defroster) used in our projector
- * enclosures. The same Raspberry Pi is used to control the projector and displahy a virtual
+ * enclosures. The same Raspberry Pi is used to control the projector and display a virtual
  * matrix and in-show videos.
  * 
  * If not run as part of an FPP instance, it can be modified to use shell script GPIO trigger
@@ -101,8 +101,6 @@ while ( TRUE ) {
         $cTemp = round ( intval ( $rawTemp[0] )  / 1000 );      //Temp is in 1000ths
         $fTemp = round ( $cTemp * 1.8 + 32 );                   //Used just for display/logs
         $status = "\n" . date ( 'Y-m-d H:i:s' ) . "\tEncl. Temp. is: " .$cTemp. "°C (" .$fTemp. "°F)";
-        //The following will be replaced with pixel overlay commands, but for
-        //now I am just logging the text...
         
         //Cooling
         if ( $cTemp >= $fan1Temp ) {
