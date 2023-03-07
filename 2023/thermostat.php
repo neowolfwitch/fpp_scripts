@@ -76,10 +76,10 @@ $tempFile = "temperature";      //You shouldn't need to change this.
 $loopTime = 30;                 //Number of seconds between updates.
 
 //Cooling:
-$fan1_overlay = 'fan1';         //Side fan(s) FPP Pixel Overlay name (first stage cooling)
+$fan1_overlay = 'Fan1';         //Side fan(s) FPP Pixel Overlay name (first stage cooling)
 $fan1Temp = 30;                 //Temp in °C to turn fan1 on
 
-$fan2_overlay = 'fan2';         //Top fan(s) FPP Pixel Overlay name (Second stage cooling)
+$fan2_overlay = 'Fan2';         //Top fan(s) FPP Pixel Overlay name (Second stage cooling)
 $fan2Temp = 35;                 //Temp in °C to turn fan2 on
 
 $warnTemp = 40;                 //Adds a temp warning to the log file.
@@ -88,7 +88,7 @@ $warnTemp = 40;                 //Adds a temp warning to the log file.
 //process if the warning temperature is reached/exceeded.
 
 //Heating:
-$heat_overlay = 'heater';       //Heater FPP Pixel Overlay name (Heater Fan)
+$heat_overlay = 'Heater';       //Heater FPP Pixel Overlay name (Heater Fan)
 $heatTemp = 4;                  //Temp in °C to turn heater on.
 //The heating temperature should be just below the lower operating temperature of the projector.
 
