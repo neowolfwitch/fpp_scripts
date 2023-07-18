@@ -1,8 +1,9 @@
 <?php
+
 /****
  * thermostat.php
  * by Wolf I Butler
- * v. 1.02 (First Production)
+ * v. 1.03 (Production)
  * 
  * This script is designed to run in the background and monitor a DS18B20 digital temperature
  * sensor installed on a Raspberry Pi.
@@ -58,12 +59,12 @@
  * since we power down the system during off-hours. You can check this log file to see what
  * the temperature of the enclosure is and what fans/heater should be running.
  * 
-***/
+ ***/
 
 /*** You must configure the following: ***/
 
 //The temperature sensor's 1Wire address will include a unique serial number:
-$devPath = "/sys/bus/w1/devices/28-3c43e38183cb/";      //Must end with a '/'
+$devPath = "/sys/bus/w1/devices/28-3c10e381052d/";      //Must end with a '/'
 //You must change this:         ^^^^^^^^^^^^^^^
 //If you are using multiple 1Wire devices, you will need to determine which one is your
 //temperature probe.
@@ -71,88 +72,123 @@ $devPath = "/sys/bus/w1/devices/28-3c43e38183cb/";      //Must end with a '/'
 //This is the file that stores the raw Celcius temperature value:
 $tempFile = "temperature";      //You shouldn't need to change this.
 
-//Generally this should be between 30-60 seconds. More often may tie up processes
+//Generally this should be between 15-60 seconds. More often may tie up processes
 //needed for the display, and too long may not react fast enough to prevent overheating.
-$loopTime = 30;                 //Number of seconds between updates.
+$loopTime = 15;                 //Number of seconds between updates.
 
 //Cooling:
 $fan1_overlay = 'Fan1';         //Side fan(s) FPP Pixel Overlay name (first stage cooling)
-$fan1Temp = 30;                 //Temp in °C to turn fan1 on
+$fan1Temp = 24;                 //Temp in °C to turn fan1 on. Default is 24 (75F)
 
 $fan2_overlay = 'Fan2';         //Top fan(s) FPP Pixel Overlay name (Second stage cooling)
-$fan2Temp = 35;                 //Temp in °C to turn fan2 on
+$fan2Temp = 28;                 //Temp in °C to turn fan2 on. Default is 28 (82F)
 
-$warnTemp = 40;                 //Adds a temp warning to the log file.
-//The above should be close to the maximum operating tempearture of the projector.
-//Not doing it now, but we may add a projector shutdown, dim, or some other mitigation 
-//process if the warning temperature is reached/exceeded.
+//Overheat Protection:
+$warnTemp = 38;                 //Adds a temp warning to the log file. Default is 38 (100F)
+//The above should be close to the maximum operating temperature of the projector.
+
+$warnShutdown = 'http://localhost/api/scripts/PROJECTOR-OFF.sh/run'; //Optional shut-down API (URL)
+//If the warnTemp is exceeded, the above API URL should be set to one that will shut down the
+//projector. You can use localhost in most cases.
 
 //Heating:
 $heat_overlay = 'Heater';       //Heater FPP Pixel Overlay name (Heater Fan)
-$heatTemp = 4;                  //Temp in °C to turn heater on.
+$heatTemp = 4;                  //Temp in °C to turn heater on. Default is 4 (39F)
 //The heating temperature should be just below the lower operating temperature of the projector.
 
 /*** Leave the following alone unless you really know what you are doing... ***/
 
-unlink ( '/home/fpp/media/logs/thermostat.log' );       //Clear the log file.
+//Get data from API
+function do_get($url)
+{
+        //Initiate cURL.
+        $ch = curl_init($url);
 
-while ( TRUE ) {                                                                                                                                                        
-        $rawTemp = file ( $devPath.$tempFile );
-        $cTemp = round ( intval ( $rawTemp[0] )  / 1000 );      //Temp is in 1000ths
-        $fTemp = round ( $cTemp * 1.8 + 32 );                   //Used just for display/logs
-        $status = "\n" . date ( 'Y-m-d H:i:s' ) . "\tEncl. Temp. is: " .$cTemp. "°C (" .$fTemp. "°F)";
-        
-        //Cooling
-        if ( $cTemp >= $fan1Temp ) {
-                //Pixel Overlay: Fan Stage 1 On
-                exec ( "fppmm -m $fan1_overlay -o on " );
-                exec ( "fppmm -m $fan1_overlay -s 255 " );
-                $status .= "\tFan 1 is ON ";
-        }
-        else {
-                //Pixel Overlay: Fan Stage 1 Off
-                exec ( "fppmm -m $fan1_overlay -s 0 " );
-                sleep (1);      //Recommended in FPP docs.
-                exec ( "fppmm -m $fan1_overlay -o off " );
-                $status .= "\tFan 1 is OFF ";
-        }
-        if ( $cTemp >= $fan2Temp ) {
-                //Pixel Overlay: Fan Stage 2 On
-                exec ( "fppmm -m $fan2_overlay -o on " );
-                exec ( "fppmm -m $fan2_overlay -s 255 " );
-                $status .= "\tFan 2 is ON ";
-        }
-        else {
-                //Pixel Overlay: Fan Stage 2 Off
-                exec ( "fppmm -m $fan2_overlay -s 0 " );
-                sleep (1);      //Recommended in FPP docs.
-                exec ( "fppmm -m $fan2_overlay -o off " );
-                $status .= "\tFan 2 is OFF ";
-        }
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
 
-        //Heater
-        if ( $cTemp <= $heatTemp ) {
-                //Pixel Overlay: heater On
-                exec ( "fppmm -m $heat_overlay -o on " );
-                exec ( "fppmm -m $heat_overlay -s 255 " );
-                $status .= "\tHeater is ON ";
-        }
-        else {
-                //Pixel Overlay: heater Off
-                exec ( "fppmm -m $heat_overlay -s 0 " );
-                sleep (1);      //Recommended in FPP docs.
-                exec ( "fppmm -m $heat_overlay -o off " );
-                $status .= "\tHeater is OFF ";
-        }
+        //Set timeouts to reasonable values:
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
 
-        //Warning
-        if ( $cTemp >= $warnTemp ) {
-                //Possible to shut down projector or drop brightness?
-                $status .= "\t***OVERTEMP WARNING***";
+        //Execute the request
+        if ($curlResult = curl_exec($ch)) {
+                $arrReturn = json_decode($curlResult, TRUE);
+                return $arrReturn;
         }
-
-        file_put_contents ( '/home/fpp/media/logs/thermostat.log', $status, FILE_APPEND );
-
-        sleep ( $loopTime );                                                                                                                                                   
+        return FALSE;
 }
-?>
+
+unlink('/home/fpp/media/logs/thermostat.log');       //Clear the log file.
+$shutdownFlag = FALSE;
+
+while (TRUE) {
+        $rawTemp = file($devPath . $tempFile);
+        $cTemp = round(intval($rawTemp[0])  / 1000);         //Temp is in 1000ths
+        $fTemp = round($cTemp * 1.8 + 32);                   //Used just for display/logs
+        $status = "\n" . date('Y-m-d H:i:s') . "\tEncl. Temp. is: " . $cTemp . "°C (" . $fTemp . "°F)";
+
+        if ($shutdownFlag) {
+                //Projector was going to overheat. Make sure fans stay on full.
+                //FPP will need to be rebooted to clear the error!
+                exec("fppmm -m $fan1_overlay -o on ");
+                exec("fppmm -m $fan1_overlay -s 255 ");
+                exec("fppmm -m $fan2_overlay -o on ");
+                exec("fppmm -m $fan2_overlay -s 255 ");
+                $status .= "\t***OVERTEMP WARNING***\n\tProjector is being shut down!";
+                $status .= "\n\tYou will need to reboot FPP to clear this state.";
+                if ($warnShutdown) do_get($warnShutdown);       //Keep sending shutdown command.
+        } else {
+
+                //High temperature warning and shutdown.
+                if ($cTemp >= $warnTemp) {
+                        //Possible to shut down projector or drop brightness?
+                        $status .= "\t***OVERTEMP WARNING***";
+                        $shutdownFlag = TRUE;
+                        if ($warnShutdown) do_get($warnShutdown);
+                }
+
+                //Cooling
+                if ($cTemp >= $fan1Temp) {
+                        //Pixel Overlay: Fan Stage 1 On
+                        exec("fppmm -m $fan1_overlay -o on ");
+                        exec("fppmm -m $fan1_overlay -s 255 ");
+                        $status .= "\tFan 1 is ON ";
+                } else {
+                        //Pixel Overlay: Fan Stage 1 Off
+                        exec("fppmm -m $fan1_overlay -s 0 ");
+                        sleep(1);      //Recommended in FPP docs.
+                        exec("fppmm -m $fan1_overlay -o off ");
+                        $status .= "\tFan 1 is OFF ";
+                }
+                if ($cTemp >= $fan2Temp) {
+                        //Pixel Overlay: Fan Stage 2 On
+                        exec("fppmm -m $fan2_overlay -o on ");
+                        exec("fppmm -m $fan2_overlay -s 255 ");
+                        $status .= "\tFan 2 is ON ";
+                } else {
+                        //Pixel Overlay: Fan Stage 2 Off
+                        exec("fppmm -m $fan2_overlay -s 0 ");
+                        sleep(1);      //Recommended in FPP docs.
+                        exec("fppmm -m $fan2_overlay -o off ");
+                        $status .= "\tFan 2 is OFF ";
+                }
+
+                //Heater
+                if ($cTemp <= $heatTemp) {
+                        //Pixel Overlay: heater On
+                        exec("fppmm -m $heat_overlay -o on ");
+                        exec("fppmm -m $heat_overlay -s 255 ");
+                        $status .= "\tHeater is ON ";
+                } else {
+                        //Pixel Overlay: heater Off
+                        exec("fppmm -m $heat_overlay -s 0 ");
+                        sleep(1);      //Recommended in FPP docs.
+                        exec("fppmm -m $heat_overlay -o off ");
+                        $status .= "\tHeater is OFF ";
+                }
+        }
+
+        file_put_contents('/home/fpp/media/logs/thermostat.log', $status, FILE_APPEND);
+        sleep($loopTime);
+}
