@@ -77,24 +77,30 @@ $tempFile = "temperature";      //You shouldn't need to change this.
 $loopTime = 15;                 //Number of seconds between updates.
 
 //Cooling:
-$fan1_overlay = 'Fan1';         //Side fan(s) FPP Pixel Overlay name (first stage cooling)
+//First stage cooling fan(s). I use this for the fan closest to the projector's cooling output.
+$fan1_overlay = 'Fan1';         //Pixel overlay name for first stage fan(s)
 $fan1Temp = 24;                 //Temp in °C to turn fan1 on. Default is 24 (75F)
 
-$fan2_overlay = 'Fan2';         //Top fan(s) FPP Pixel Overlay name (Second stage cooling)
+//Second stage cooling fan(s). I use this for the remaining enclosure cooling fans.
+$fan2_overlay = 'Fan2';         //Pixel overlay name for the second stage fan(s).
 $fan2Temp = 28;                 //Temp in °C to turn fan2 on. Default is 28 (82F)
 
 //Overheat Protection:
-$warnTemp = 38;                 //Adds a temp warning to the log file. Default is 38 (100F)
+//This will put an alarm message in thermostat.log, and optionally send a shut down signal to the projector.
+$warnTemp = 38;                 //Temperature warning trigger. Default is 38 (100F)
 //The above should be close to the maximum operating temperature of the projector.
 
 $warnShutdown = 'http://localhost/api/scripts/PROJECTOR-OFF.sh/run'; //Optional shut-down API (URL)
 //If the warnTemp is exceeded, the above API URL should be set to one that will shut down the
-//projector. You can use localhost in most cases.
+//projector. You can use localhost in most cases. The default is to use the PROJECTOR-OFF.sh
+//script, which is provided with the Projector Control Plugin in FPP.
+//Set to FALSE to disable.
 
 //Heating:
 $heat_overlay = 'Heater';       //Heater FPP Pixel Overlay name (Heater Fan)
 $heatTemp = 4;                  //Temp in °C to turn heater on. Default is 4 (39F)
 //The heating temperature should be just below the lower operating temperature of the projector.
+//Most have an operating temperature range starting at 40F.
 
 /*** Leave the following alone unless you really know what you are doing... ***/
 
@@ -124,6 +130,19 @@ $shutdownFlag = FALSE;
 
 while (TRUE) {
         $rawTemp = file($devPath . $tempFile);
+        if ($rawTemp == 0) {
+                //Failsafe in case there is no reading from the sensor.'
+                //This will happen if you do an FPP OS upgrade! Remember to reconfigure the sensor!
+                //Without this- the heater will run all the time and the fans will never turn on.
+                $status .= "\n*** SENSOR ERROR - SYSTEM SHUTDOWN ***";
+                $status .= "\nYou will need to reboot FPP to clear this state.";
+                $shutdownFlag = TRUE;
+                if ($warnShutdown) do_get($warnShutdown);
+                file_put_contents('/home/fpp/media/logs/thermostat.log', $status, FILE_APPEND);
+                sleep(10);
+                continue;
+        }
+
         $cTemp = round(intval($rawTemp[0])  / 1000);         //Temp is in 1000ths
         $fTemp = round($cTemp * 1.8 + 32);                   //Used just for display/logs
         $status = "\n" . date('Y-m-d H:i:s') . "\tEncl. Temp. is: " . $cTemp . "°C (" . $fTemp . "°F)";
@@ -135,17 +154,19 @@ while (TRUE) {
                 exec("fppmm -m $fan1_overlay -s 255 ");
                 exec("fppmm -m $fan2_overlay -o on ");
                 exec("fppmm -m $fan2_overlay -s 255 ");
-                $status .= "\t***OVERTEMP WARNING***\n\tProjector is being shut down!";
+                $status .= "\n\t***OVERTEMP WARNING***\n\tProjector is being shut down!";
                 $status .= "\n\tYou will need to reboot FPP to clear this state.";
                 if ($warnShutdown) do_get($warnShutdown);       //Keep sending shutdown command.
         } else {
 
                 //High temperature warning and shutdown.
                 if ($cTemp >= $warnTemp) {
-                        //Possible to shut down projector or drop brightness?
-                        $status .= "\t***OVERTEMP WARNING***";
+                        //Log high temperature and shut down projector, if $warnShutdown is configured.
+                        $status .= "\n*** OVERTEMP WARNING - SYSTEM SHUTDOWN ***";
+                        $status .= "\nYou will need to reboot FPP to clear this state.";
                         $shutdownFlag = TRUE;
                         if ($warnShutdown) do_get($warnShutdown);
+                        continue;
                 }
 
                 //Cooling
