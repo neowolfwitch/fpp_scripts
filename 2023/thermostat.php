@@ -29,6 +29,10 @@
  * projector to get a good "average" temperature inside the enclosure. Having it too
  * close to an air intake or the exhaust from the projector will not yield good results.
  * 
+ * WARNING: The following settings, as well as the 1Wire address set below, will be 
+ * deleted if you do an "FPP-OS" upgrade! This is because the operating system is completely
+ * replaced, with these non-default options being removed.
+ * 
  * Edit /boot/config.txt and add the following to the bottom:
  * dtoverlay=w1-gpio
  * 

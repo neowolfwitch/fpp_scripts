@@ -64,9 +64,10 @@ $randValues = array(
 'blue_high' => 100 
 );
 
-//Block mode. You should leave this at 1 unless you need to enable advanced functionality.
-//Set to 2 for Transparent mode, or 3 for Transparent RGB
-$blockMode = 1;
+//Block mode.
+//Set to 1 if you are ONLY displaying information on the sign.
+//Set to 2 for Transparent mode if you want the text overlaid onto effects from your show.
+$blockMode = 2;
 
 //Idle file. This file contains show information played when a sequence isn't running.
 //For example, it can contain show schedule information.
