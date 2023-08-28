@@ -7,7 +7,7 @@
  * This file is read on each loop, so you can make changes (such as overrides or info changes) live.
  * It only sets variables, so it's pointless to actually run it outside of info-matrix.php. 
  *
- * Version 4.0, Updated 11/28/2022
+ * Version 4.2, Updated 08/28/2023
  * Remove need to download the current playlist from a Web server. This was problematic and required
  * Internet access which a show network may not have. We are now pulling the playlist directly from
  * the configured Show Runner (Master).

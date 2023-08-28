@@ -31,7 +31,8 @@
  * 
  * WARNING: The following settings, as well as the 1Wire address set below, will be 
  * deleted if you do an "FPP-OS" upgrade! This is because the operating system is completely
- * replaced, with these non-default options being removed.
+ * replaced, with these non-default options being removed. I recommend saving the 1Wire
+ * address to a text file, like 1wire.txt, in FPP so it can easily be obtained again.
  * 
  * Edit /boot/config.txt and add the following to the bottom:
  * dtoverlay=w1-gpio

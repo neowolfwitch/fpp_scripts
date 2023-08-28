@@ -2,14 +2,16 @@
 /*** 
  * tune-to-matrix.php
  * by Wolf I. Butler
- * v. 4.0, Last Updated: 11/28/2022
+ * v. 4.2, Last Updated: 08/28/2023
+ * 
+ * Adapted from info-matrix.php.
  * 
  * Removed need to download the current playlist from a Web server. This was problematic and required
  * Internet access which a show network may not have. It also just had too many moving parts as it
  * relied on the Web server's copy of the playlist being updated all the time.
  * We are now pulling the playlist directly from the configured Show Runner (Master).
  *  
- * This script obrtains the current song information from the Show Runner (Master) FPP to display 
+ * This script obtains the current song information from the Show Runner (Master) FPP to display 
  * the currently running sequence information on an attached matrix using Overlay Models.
  * 
  * It also displays in-show information (such as a welcome message and tune-to info.)
@@ -31,7 +33,7 @@
  * Like this:
  *    boot)		
  *      # put your commands here
- *      /usr/bin/php /home/fpp/media/scripts/info-matrix.php &
+ *      /usr/bin/php /home/fpp/media/scripts/tune-to-matrix.php &
  *      ;;
  * 
  * This script runs independently of anything else in FPP. The FPP instance should be set to "Player"

@@ -3,7 +3,7 @@
 /*** 
  * info-matrix.php
  * by Wolf I. Butler
- * v. 4.0, Last Updated: 11/28/2022
+ * v. 4.2, Last Updated: 08/28/2023
  * 
  * Removed need to download the current playlist from a Web server. This was problematic and required
  * Internet access which a show network may not have. It also just had too many moving parts as it
