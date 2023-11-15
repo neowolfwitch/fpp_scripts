@@ -36,7 +36,7 @@ $outList = 'Shuffled Xmas';              //This is the output playlist name.
 //may be playing. It may cause unpredictable results.
 
 $reminderList = "Reminder";        //Reminder/Welcome playlist. Set to FALSE if not using.
-$reminderInt = 7;       //Number of songs between reminder messages.
+$reminderInt = 5;       //Number of songs between reminder messages.
 //reminderList should be a playlist that contains your reminder sequence(s).
 //These would include announcements and reminder messages you want played regularly during your show.
 

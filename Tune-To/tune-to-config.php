@@ -1,17 +1,14 @@
 <?php
 /***
- * info-config.php
+ * tune-to-config.php
  * 
  * Configuration file for tune-to-matrix.php
  * 
  * This file is read on each loop, so you can make changes (such as overrides or info changes) live.
- * It only sets variables, so it's pointless to actually run it outside of info-matrix.php. 
+ * It only sets variables, so it's pointless to actually run it outside of tune-to-matrix.php. 
  *
- * Version 4.2, Updated 08/28/2023
- * Remove need to download the current playlist from a Web server. This was problematic and required
- * Internet access which a show network may not have. We are now pulling the playlist directly from
- * the configured Show Runner (Master).
- * 
+ * Version 4.2, Updated 09/05/2023
+ *
  */
 
 //Log activity TRUE/FALSE:
@@ -49,7 +46,7 @@ $overlayName  = "LED+Panels";      # Pixel Overlay Model Name. Verify name in FP
 $color = "RAND";            # Text Color (#FF0000) (also names like 'red', 'blue', etc.). Set to RAND for random color for each message.
 $font  = "Helvetica";       # Font Name
 $size  = 14;                # Font size
-$pos   = "R2L";             # Position/Scroll: 'Center', 'L2R', 'R2L', 'T2B', 'B2T'
+$pos   = "R2L";          # Position/Scroll: 'Center', 'L2R', 'R2L', 'T2B', 'B2T'
 $pps   = 64;                # Pixels Per Second to Scroll
 $antiAlias = true;          # Anti-Alias the text
 
@@ -67,7 +64,7 @@ $randValues = array(
 //Block mode.
 //Set to 1 if you are ONLY displaying information on the sign.
 //Set to 2 for Transparent mode if you want the text overlaid onto effects from your show.
-$blockMode = 2;
+$blockMode = 3;
 
 //Idle file. This file contains show information played when a sequence isn't running.
 //For example, it can contain show schedule information.
@@ -76,13 +73,13 @@ $blockMode = 2;
 //It is loaded on every non-sequence loop iteration, so you can change it on-the-fly if you need to.
 $idleFile = "info-idle.txt";
 
-//We have some "Static" light displays before and after our actual musical show. These emulate "old school"
+//We have some "Static" light sequences before and after our actual musical show. These emulate "old school"
 //christmas lights, or just include patterns that we don't need to display any other information about.
 //In these cases- we want to display the show information in the "idleFile" (above).
 //In order to do this- prefix those sequence file names with the text below.
 $staticPrefix = "Static_";
 
-//This is for "Intro" displays with messages displayed DURING a show. We only want to display limited
+//This is for "Intro" sequences with messages displayed DURING a show. We only want to display limited
 //information during these as they are short and won't have any music to pull data from.
 $introPrefix = "Intro_";
 

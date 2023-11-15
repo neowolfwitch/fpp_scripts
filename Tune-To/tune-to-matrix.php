@@ -325,6 +325,12 @@ while (TRUE) {
             //}
             $outText .= $gap;
         }
+        else {
+            if ( $arrStatus['current_sequence'] ) {
+                //We have a sequence without a song title, so probably no MP3 Metadata...
+                logger ( "No title for song in sequence " . $arrStatus['current_sequence']);
+            }
+        }
         $outText .= $postroll;
     }
     else {
