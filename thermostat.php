@@ -133,29 +133,6 @@ unlink('/home/fpp/media/logs/thermostat.log');       //Clear the log file.
 
 $shutdownFlag = FALSE;
 
-//Set the GPIOs to Output. Shutdown system if there is an error.
-exec ("/opt/fpp/src/fpp -G $fan1_gpio,Output",$arr_out,$result);
-if ($result) {
-        $status .= "\n*** Unable to set control GPIO for Fan1! Projector shutdown for safety. ***";
-        $status .= "\nYou will need to reboot FPP to clear this state.";
-        $shutdownFlag = TRUE;
-        do_get($shutdown);
-}
-exec ("/opt/fpp/src/fpp -G $fan2_gpio,Output",$arr_out,$result);
-if ($result) {
-        $status .= "\n*** Unable to set control GPIO for Fan2! Projector shutdown for safety. ***";
-        $status .= "\nYou will need to reboot FPP to clear this state.";
-        $shutdownFlag = TRUE;
-        do_get($shutdown);
-}
-exec ("/opt/fpp/src/fpp -G $heat_gpio,Output",$arr_out,$result);
-if ($result) {
-        $status .= "\n*** Unable to set control GPIO for Heater! Projector shutdown for safety. ***";
-        $status .= "\nYou will need to reboot FPP to clear this state.";
-        $shutdownFlag = TRUE;
-        do_get($shutdown);
-}
-
 while (TRUE) {
         
         $rawTemp = file($devPath . $tempFile);
@@ -166,6 +143,9 @@ while (TRUE) {
         if ($shutdownFlag) {
                 //Projector was going to overheat. Make sure fans stay on full and heater is off.
                 //FPP will need to be rebooted to clear the error!
+                exec("/opt/fpp/src/fpp -G $fan1_gpio,Output");
+                exec("/opt/fpp/src/fpp -G $fan2_gpio,Output");
+                exec("/opt/fpp/src/fpp -G $heat_gpio,Output");
                 exec("/opt/fpp/src/fpp -g $fan1_gpio,Output,1");
                 exec("/opt/fpp/src/fpp -g $fan2_gpio,Output,1");
                 exec("/opt/fpp/src/fpp -g $heat_gpio,Output,0");
@@ -203,19 +183,23 @@ while (TRUE) {
         //Cooling
         if ($cTemp >= $fan1Temp) {
                 //Fan Stage 1 On
+                exec("/opt/fpp/src/fpp -G $fan1_gpio,Output");
                 exec("/opt/fpp/src/fpp -g $fan1_gpio,Output,1");
                 $status .= "\tFan 1 is ON ";
         } else {
                 //Pixel Overlay: Fan Stage 1 Off
+                exec("/opt/fpp/src/fpp -G $fan1_gpio,Output");
                 exec("/opt/fpp/src/fpp -g $fan1_gpio,Output,0");
                 $status .= "\tFan 1 is OFF ";
         }
         if ($cTemp >= $fan2Temp) {
                 //Fan Stage 2 On
+                exec("/opt/fpp/src/fpp -G $fan2_gpio,Output");
                 exec("/opt/fpp/src/fpp -g $fan2_gpio,Output,1");
                 $status .= "\tFan 2 is ON ";
         } else {
                 //Fan Stage 2 Off
+                exec("/opt/fpp/src/fpp -G $fan2_gpio,Output");
                 exec("/opt/fpp/src/fpp -g $fan2_gpio,Output,0");
                 $status .= "\tFan 2 is OFF ";
         }
@@ -223,10 +207,12 @@ while (TRUE) {
         //Heater
         if ($cTemp <= $heatTemp) {
                 //Heater On
+                exec("/opt/fpp/src/fpp -G $heat_gpio,Output");     
                 exec("/opt/fpp/src/fpp -g $heat_gpio,Output,1");
                 $status .= "\tHeat is ON ";
         } else {
                 //Heater Off
+                exec("/opt/fpp/src/fpp -G $heat_gpio,Output");     
                 exec("/opt/fpp/src/fpp -g $heat_gpio,Output,0");
                 $status .= "\tHeat is OFF ";
         }
