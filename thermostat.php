@@ -6,7 +6,7 @@
  * v. 2.0.0
  *  
  * v.2 Changes:
- * Modified to call GPIOs directly instead of relying on FPP's GPIO Output function.
+ * Modified to call GPIOs directly instead of relying on FPP's GUI GPIO Output functions.
  * 
  * This script is designed to run in the background and monitor a DS18B20 digital temperature
  * sensor installed on a Raspberry Pi.

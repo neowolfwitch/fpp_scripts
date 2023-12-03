@@ -2,16 +2,15 @@
 /*** 
  * power-on.php
  * by Wolf I. Butler
- * v. 1.1, Last Updated: 11/21/2023
+ * v. 1.2, Last Updated: 11/21/2023
  * 
  * This simply turns on Main Power on the power management computer.
  * I've found doing this in scripts works better than running remote
  * scripts via a playlist. Upload and run on the Show Runner FPP.
  *
- * Because some pixels inevitably turn on when power is applied, I created a 1-second
- * long sequence that just sends OFF to the All GRP. I added the URL to launch this
- * after a 30-second delay to give the controllers time to boot. This should turn off
- * any "pilot light" pixels that aren't actually failures.
+ * Removed code to send "Off" to the pixels via a sequence. This ends up
+ * Inturrupting any playing sequences depending on how you have things 
+ * scheduled, resulting in a show reset every minute.(!)
  *
  * Run the script "non-blocking" in the scheduler so it will run in the background.
  * 
@@ -59,9 +58,5 @@ foreach ( $power as $ip ) {
      do_get ( "http://$ip/runEventScript.php?scriptName=Power-On.sh" );
      echo " done.";
 }
-sleep(30);   //Give controllers some time to boot.
-echo "\nTurning off any pixels that may have turned on when power was applied...";
-do_get ( "http://localhost/api/playlist/All-Off.fseq/start" );
-echo " done.";
-echo "\nOperation complete!";
+echo "\nOperation complete!\n";
 ?>
