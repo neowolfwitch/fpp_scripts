@@ -46,7 +46,7 @@ $reminderInt = 5;       //Number of songs between reminder messages.
 
 //Note on song announcements:
 //If you announce certain non-Christmas or other songs, like "This is a Disney song..." the best way to
-//handle them is to put them in their own individual playlists, just containing your announcment and
+//handle them is to put them in their own individual playlists, just containing your announcement and
 //the special song's sequence, and then link those into your $inList playlist by just adding them as
 //a playlist. This script will treat them appropriately.
 
@@ -96,6 +96,7 @@ $arrOut['leadIn'] = $json['leadIn'];
 //Main Playlist
 $i = 0;        //Playlist index.
 
+//Used to help prevent consecutive embedded playlists from running in the output playlist.
 //Setting this to TRUE initially to prevent an embedded playlist from STARTING the show...
 $plFlag = TRUE;
 

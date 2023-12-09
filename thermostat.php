@@ -3,7 +3,7 @@
 /****
  * thermostat.php
  * by Wolf I Butler
- * v. 2.0.0
+ * v. 2.0.1
  *  
  * v.2 Changes:
  * Modified to call GPIOs directly instead of relying on FPP's GUI GPIO Output functions.
@@ -74,9 +74,15 @@ $devPath = "/sys/bus/w1/devices/28-3c10e381052d/";      //Must end with a '/'
 //This is the file that stores the raw Celcius temperature value:
 $tempFile = "temperature";      //You shouldn't need to change this.
 
+//Wait time before starting to monitor the temperature.
+//Sometimes this script will actually run before the 1W wire module is loaded, and it will
+//falsely detect a temperature sensor error. This gives the module more time to load.
+//Generally 5 seconds should be enough time.
+$waitTime = 5;
+
 //Generally this should be between 15-60 seconds. More often may tie up processes
 //needed for the display, and too long may not react fast enough to prevent overheating.
-$loopTime = 15;                 //Number of seconds between updates.
+$loopTime = 15;         //Number of seconds between updates.
 
 //Cooling:
 //First stage cooling fan(s). I use this for the fan closest to the projector's cooling output.
@@ -129,7 +135,12 @@ function do_get($url)
         return FALSE;
 }
 
-unlink('/home/fpp/media/logs/thermostat.log');       //Clear the log file.
+//Rotate the log file(s). We want to keep the last three.
+if ( is_file ('/home/fpp/media/logs/thermostat.3.log') ) unlink ('/home/fpp/media/logs/thermostat.3.log');
+if ( is_file ('/home/fpp/media/logs/thermostat.2.log') ) rename ('/home/fpp/media/logs/thermostat.2.log', '/home/fpp/media/logs/thermostat.3.log');
+if ( is_file ('/home/fpp/media/logs/thermostat.log') ) rename ('/home/fpp/media/logs/thermostat.log', '/home/fpp/media/logs/thermostat.2.log');
+
+sleep ($waitTime);
 
 $shutdownFlag = FALSE;
 

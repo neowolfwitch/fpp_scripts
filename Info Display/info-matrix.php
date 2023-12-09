@@ -276,6 +276,21 @@ while (TRUE) {
           }
      }
 
+     if (! $songTitle) {
+          //See if there is an alternate info file for this song if missing meta...
+          $info = "/home/fpp/media/upload/$songTitle.info";
+          if ( is_file ( $info ) ) {
+              $arrInfo = file ( $info );
+              foreach ( $arrInfo as $index => $value ) {
+                  //Doing this way to limit errors if the file isn't formatted correctly.
+                  if ($index == 0) $songTitle = trim ( $value );
+                  if ($index == 1) $songArtist = trim ( $value );
+                  if ($index == 2) $songAlbum = trim ( $value );
+                  if ($index == 3) break;
+              }
+          }
+     }
+
      if ($songTitle) {
           $outText = null;
 

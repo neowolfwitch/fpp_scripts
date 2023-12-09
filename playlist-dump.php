@@ -1,5 +1,8 @@
 <?php
 /*** 
+ * 
+ * DEPRECATED. Does not work anyore and not used.
+ * 
  * playlist_dump.php
  * by Wolf I. Butler
  * v. 2.0, Last Updated: 11/30/2021
@@ -11,7 +14,7 @@
  * Use to display the playlist on a Web site.
  * 
  * This should be run on the master/show-runner FPP intall.
- * It pulls all information from "localhost". 
+ * It pulls all information from SERVER value. 
  * 
  * This should be manually run when the playlist changes.
  * It should not be set up to run automatically.
@@ -22,6 +25,7 @@
 */
 
 //Just set this...
+define ( 'SERVER', '10.0.0.5' );
 define ( 'PATH', '/home/fpp/media/upload/' );
 $playlistName = "Shuffled Xmas";
 
@@ -50,7 +54,7 @@ function do_get ( $url ) {
 
 function get_json ( $listName ) {
     $listName = rawurlencode ( $listName );
-    $json = do_get ( "http://localhost/api/playlist/$listName" );
+    $json = do_get ( "http://".SERVER."/api/playlist/$listName" );
     return $json;
 }
 
@@ -79,7 +83,8 @@ function process_info ( $item ) {
     $songArtist = FALSE;
     $songAlbum = FALSE;
     
-    $arrMeta = do_get ( "http://localhost/api/media/$mp3URL/meta" );
+    $arrMeta = do_get ( "http://".SERVER."/api/media/$mp3URL/meta" );
+    
     $arrMediaInfo = $arrMeta['format']['tags'];
 
     if ( $songTitle = $arrMediaInfo['title'] ) {
@@ -88,6 +93,21 @@ function process_info ( $item ) {
         }
         elseif ( $songArtist = $arrMediaInfo['album_artist'] ) {
             $songAlbum = $arrMediaInfo['album'];
+        }
+    }
+    else{
+        //Assuming no MP3 tags found. Try to retrieve song information text file.
+        //This is used/done by the info-matrix.php script. See that script for details.
+        $info = PATH . $songTitle . ".info";
+        if ( is_file ( $info ) ) {
+            $arrInfo = file ( $info );
+            foreach ( $arrInfo as $index => $value ) {
+                //Doing this way to limit errors if the file isn't formatted correctly.
+                if ($index == 0) $songTitle = trim ( $value );
+                if ($index == 1) $songArtist = trim ( $value );
+                if ($index == 2) $songAlbum = trim ( $value );
+                if ($index > 2) break;
+            }
         }
     }
 
@@ -101,19 +121,7 @@ function process_info ( $item ) {
             $songArtist = '(Intro/Info)';
         }
 
-        //Assuming no MP3 tags found. Try to retrieve song information text file.
-        //This is used/done by the info-matrix.php script. See that script for details.
-        $info = PATH . "$songTitle.txt";
-        if ( is_file ( $info ) ) {
-            $arrInfo = file ( $info );
-            foreach ( $arrInfo as $index => $value ) {
-                //Doing this way to limit errors if the file isn't formatted correctly.
-                if ($index == 0) $songTitle = trim ( $value );
-                if ($index == 1) $songArtist = trim ( $value );
-                if ($index == 2) $songAlbum = trim ( $value );
-                if ($index == 3) break;
-            }
-        }
+
     }
 
     $arrPlaylist['Runtime'] = $strTime;
@@ -137,8 +145,6 @@ if ( $checkMD5 = file_get_contents ( PATH . 'playlist.md5' ) ) {
         file_put_contents ( PATH . 'playlist.md5', $md5 );
     }
 }
-
-
 
 foreach ( $json['mainPlaylist'] as $item ) {
     sleep(1);   //Slowing the script down so it doesn't take too many API resources

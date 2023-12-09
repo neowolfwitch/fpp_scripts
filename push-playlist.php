@@ -18,10 +18,10 @@
 
 //Just set these...
 define ( 'PATH', '/home/fpp/media/upload/' );       //Path to .txt info files for MP3s without meta data.
-define ( 'WEB_SERVER', 'https://example.com' );    //Web server URL or IP.
+define ( 'WEB_SERVER', 'https://oakhillslights.com' );    //Web server URL or IP.
 //The following should be a long random key or phrase.
 //This must match the "KEY" in the Web server's sync-playlist.php script.
-define ( 'KEY', 'BigLongKeyGoesHere' );   //Base access key.
+define ( 'KEY', 'eijeiGh8ohgeevoofee7thae3Ucoop7o' );   //Base access key.
 define ( 'DEFAULT_PLAYLIST', 'Shuffled Xmas' );     //Default playlist. Used if nothing is running when this script runs.
 define ( 'DEBUG_MODE', TRUE );      //Set to TRUE to print out progress info.
 
@@ -29,7 +29,7 @@ define ( 'DEBUG_MODE', TRUE );      //Set to TRUE to print out progress info.
 //If the script is run during any of these hours, the cache file will be used, instead of requesting MP3 metadata for all
 //songs from FPP. This is to insure the highest performance of FPP. During non-peak hours- the MP3 metadata is queried
 //and the cache is re-built.
-$arrPeakHours = array ( 16,17,18,19,20,21,22,23 );
+$arrPeakHours = array ( 17,18,19,20,21,22,23 );
 
 //Leave the rest alone...
 
@@ -133,9 +133,16 @@ function process_info ( $item, $cache = FALSE ) {
 
      //Only get metadata from FPP if it wasn't cached...
     if ( ! isset ( $arrMediaInfo['title'] ) ) {
-        $arrMeta = do_get ( "http://localhost/api/media/$mp3URL/meta" );
-        $arrMediaInfo = $arrMeta['format']['tags'];   
         if ( DEBUG_MODE ) echo "NOT Cached - " . $item['mediaName'];
+        $arrMeta = do_get ( "http://localhost/api/media/$mp3URL/meta" );
+        if ( isset ( $arrMeta['format']['tags'] ) ) {
+            $arrMediaInfo = $arrMeta['format']['tags'];
+            if ( DEBUG_MODE ) echo "Tags retrieved from media - " . $item['mediaName'];
+        }
+        else{
+            $arrMediaInfo = array();  //Initialize  
+            if ( DEBUG_MODE ) echo "NO Tags retrieved from media - " . $item['mediaName'];
+        } 
     }
  
     if ( isset ( $arrMediaInfo['title'] ) ) {
@@ -149,6 +156,7 @@ function process_info ( $item, $cache = FALSE ) {
 
     //"Fix" Oak Hills Lights Intros. Most don't have metadata, or metadata is outdated.
     if ( substr ( $item['mediaName'], 0, 4 ) == 'OHL-' ) {
+        if ( DEBUG_MODE ) echo "OHL Intro, default tags used - " . $item['mediaName'];
         $arrMP3 = explode ( ".", $item['mediaName'] );
         $songTitle = $arrMP3[0];    //Default to MP3 name.
         $songTitle = substr ( $songTitle, 4 );
@@ -164,7 +172,7 @@ function process_info ( $item, $cache = FALSE ) {
 
         //Assuming no MP3 tags found. Try to retrieve song information text file.
         //This is used/done by the info-matrix.php script. See that script for details.
-        $info = PATH . "$songTitle.txt";
+        $info = PATH . "$songTitle.info";
         if ( is_file ( $info ) ) {
             $arrInfo = file ( $info );
             foreach ( $arrInfo as $index => $value ) {
@@ -174,6 +182,7 @@ function process_info ( $item, $cache = FALSE ) {
                 if ($index == 2) $songAlbum = trim ( $value );
                 if ($index == 3) break;
             }
+            if ( DEBUG_MODE ) echo "Media data pulled from file. - " . $info;
         }
     }
 
@@ -189,9 +198,10 @@ function process_info ( $item, $cache = FALSE ) {
  
 if ( DEBUG_MODE ) echo "\nStarting playlist processing...\n";   //Debugging
 //Get currently-running playlist from FPP...
-$status = do_get ( "http://localhost/api/system/status" );
-if ( $status['current_playlist']['playlist'] ) $listName = $status['current_playlist']['playlist'];
-else $listName = DEFAULT_PLAYLIST;
+//$status = do_get ( "http://localhost/api/system/status" );
+//if ( $status['current_playlist']['playlist'] ) $listName = $status['current_playlist']['playlist'];
+//else 
+$listName = DEFAULT_PLAYLIST;
 
 //Get playlist data from FPP...
 $listName = rawurlencode ( $listName );
